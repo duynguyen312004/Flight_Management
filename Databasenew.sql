@@ -1,64 +1,69 @@
-CREATE DATABASE my_database;
-USE my_database;
+-- Tạo cơ sở dữ liệu
+CREATE DATABASE flight_management_database;
+USE flight_management_database;
 
-CREATE TABLE Gate (
-    gateNumber VARCHAR(50) PRIMARY KEY,
-    isAvailable BOOLEAN
+-- Bảng gate
+CREATE TABLE gate (
+    gate_number VARCHAR(50) PRIMARY KEY,
+    is_available TINYINT(1) CHECK (is_available IN (0, 1))
 );
 
-CREATE TABLE GroundStaff (
+-- Bảng ground_staff
+CREATE TABLE ground_staff (
     id VARCHAR(50) PRIMARY KEY,
-    assignedGate VARCHAR(50),
-    shiftSchedule VARCHAR(50),
-    FOREIGN KEY (assignedGate) REFERENCES Gate(gateNumber)
+    assigned_gate VARCHAR(50),
+    FOREIGN KEY (assigned_gate) REFERENCES gate(gate_number)
 );
 
-CREATE TABLE Employee (
+-- Bảng employee
+CREATE TABLE employee (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100),
     address VARCHAR(255),
     role VARCHAR(50)
 );
 
-CREATE TABLE FlightCrew (
+-- Bảng flight_crew
+CREATE TABLE flight_crew (
     id VARCHAR(50) PRIMARY KEY,
-    crewRole VARCHAR(50),
-    FOREIGN KEY (id) REFERENCES Employee(id)
+    crew_role VARCHAR(50),
+    FOREIGN KEY (id) REFERENCES employee(id)
 );
 
-CREATE TABLE Admin (
-    adminID VARCHAR(50) PRIMARY KEY
+-- Bảng airplane
+CREATE TABLE airplane (
+    airplane_id VARCHAR(50) PRIMARY KEY,
+    seat_capacity INT CHECK (seat_capacity >= 0)
 );
 
-CREATE TABLE Airplane (
-    airplaneID VARCHAR(50) PRIMARY KEY,
-    seatCapacity INT
+-- Bảng flight với ENUM cho trạng thái
+CREATE TABLE flight (
+    flight_number VARCHAR(50) PRIMARY KEY,
+    departure_location VARCHAR(100),
+    arrival_location VARCHAR(100),
+    departure_time DATETIME,
+    arrival_time DATETIME,
+    status ENUM('Scheduled', 'Delayed', 'Cancelled', 'Landed'),
+    airplane_id VARCHAR(50),
+    FOREIGN KEY (airplane_id) REFERENCES airplane(airplane_id)
 );
 
-CREATE TABLE Flight (
-    flightNumber VARCHAR(50) PRIMARY KEY,
-    departureLocation VARCHAR(100),
-    arrivalLocation VARCHAR(100),
-    departureTime DATETIME,
-    arrivalTime DATETIME,
-    status VARCHAR(50),
-    airplaneID VARCHAR(50),
-    FOREIGN KEY (airplaneID) REFERENCES Airplane(airplaneID)
-);
-
-CREATE TABLE Passenger (
+-- Bảng passenger
+CREATE TABLE passenger (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100),
-    email VARCHAR(100),
-    phone VARCHAR(20)
+    email VARCHAR(100) UNIQUE,
+    phone VARCHAR(20) UNIQUE
 );
 
-CREATE TABLE Ticket (
-    ticketID VARCHAR(50) PRIMARY KEY,
-    flightNumber VARCHAR(50),
-    passengerID VARCHAR(50),
-    seatClass VARCHAR(50),
-    isConfirmed BOOLEAN,
-    FOREIGN KEY (flightNumber) REFERENCES Flight(flightNumber),
-    FOREIGN KEY (passengerID) REFERENCES Passenger(id)
+-- Bảng ticket với ENUM cho seat_class
+CREATE TABLE ticket (
+    ticket_id VARCHAR(50) PRIMARY KEY,
+    flight_number VARCHAR(50),
+    passenger_id VARCHAR(50),
+    seat_number VARCHAR(10),
+    seat_class ENUM('Economy', 'Business'),
+    price DECIMAL(10, 2),
+    FOREIGN KEY (flight_number) REFERENCES flight(flight_number) ON DELETE CASCADE,
+    FOREIGN KEY (passenger_id) REFERENCES passenger(id)
 );
