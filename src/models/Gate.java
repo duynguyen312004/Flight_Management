@@ -2,7 +2,7 @@ package models;
 
 public class Gate {
     private int gateNumber;
-    private boolean isAvailable;
+    private boolean isAvailable; // true = khả dụng, false = không khả dụng
 
     public Gate(int gateNumber, boolean isAvailable) {
         this.gateNumber = gateNumber;
