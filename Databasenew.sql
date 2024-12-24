@@ -8,19 +8,20 @@ CREATE TABLE gate (
     is_available TINYINT(1) CHECK (is_available IN (0, 1))
 );
 
--- Bảng ground_staff
-CREATE TABLE ground_staff (
-    id VARCHAR(50) PRIMARY KEY,
-    assigned_gate VARCHAR(50),
-    FOREIGN KEY (assigned_gate) REFERENCES gate(gate_number)
-);
-
 -- Bảng employee
 CREATE TABLE employee (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100),
     address VARCHAR(255),
     role VARCHAR(50)
+);
+
+-- Bảng ground_staff
+CREATE TABLE ground_staff (
+    id VARCHAR(50) PRIMARY KEY,
+    assigned_gate VARCHAR(50),
+    FOREIGN KEY (id) REFERENCES employee(id),
+    FOREIGN KEY (assigned_gate) REFERENCES gate(gate_number)
 );
 
 -- Bảng flight_crew

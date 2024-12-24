@@ -30,8 +30,19 @@ public class FlightService {
                         resultSet.getString("arrival_time"),
                         resultSet.getString("status"));
                 flights.add(flight);
+
+                // Log dữ liệu chuyến bay
+                System.out.printf(
+                        "Loaded flight: [Flight Number: %s, Departure: %s, Arrival: %s, Departure Time: %s, Arrival Time: %s, Status: %s]%n",
+                        resultSet.getString("flight_number"),
+                        resultSet.getString("departure_location"),
+                        resultSet.getString("arrival_location"),
+                        resultSet.getString("departure_time"),
+                        resultSet.getString("arrival_time"),
+                        resultSet.getString("status"));
             }
         } catch (SQLException e) {
+            System.err.println("Error while fetching flights from the database.");
             e.printStackTrace();
         }
 
