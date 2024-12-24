@@ -42,7 +42,7 @@ public class GateService {
              PreparedStatement checkStmt = connection.prepareStatement(checkQuery);
              PreparedStatement updateStmt = connection.prepareStatement(updateQuery)) {
 
-            // Kiểm tra trạng thái cổng
+            
             checkStmt.setInt(1, gateNumber);
             ResultSet resultSet = checkStmt.executeQuery();
 
@@ -58,7 +58,7 @@ public class GateService {
                 return false;
             }
 
-            // Cập nhật trạng thái cổng
+          
             updateStmt.setInt(1, gateNumber);
             updateStmt.executeUpdate();
             System.out.println("Gate " + gateNumber + " has been assigned successfully.");
@@ -80,7 +80,6 @@ public class GateService {
              PreparedStatement checkStmt = connection.prepareStatement(checkQuery);
              PreparedStatement updateStmt = connection.prepareStatement(updateQuery)) {
 
-            // Kiểm tra trạng thái cổng
             checkStmt.setInt(1, gateNumber);
             ResultSet resultSet = checkStmt.executeQuery();
 
@@ -96,7 +95,7 @@ public class GateService {
                 return false;
             }
 
-            // Cập nhật trạng thái cổng
+
             updateStmt.setInt(1, gateNumber);
             updateStmt.executeUpdate();
             System.out.println("Gate " + gateNumber + " has been released successfully.");
@@ -115,8 +114,8 @@ public class GateService {
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
     
-            statement.setBoolean(1, isAvailable); // Đặt trạng thái mới (true / false)
-            statement.setInt(2, gateNumber); // Sử dụng gateNumber để xác định cổng cần thay đổi
+            statement.setBoolean(1, isAvailable); 
+            statement.setInt(2, gateNumber); 
     
             int rowsUpdated = statement.executeUpdate();
             if (rowsUpdated > 0) {

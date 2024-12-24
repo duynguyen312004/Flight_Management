@@ -3,6 +3,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "TicketTest",
+            "request": "launch",
+            "mainClass": "models.TicketTest",
+            "projectName": "Flight_Management_cce1ef17"
+        },
+        {
+            "type": "java",
+            "name": "PassengerTest",
+            "request": "launch",
+            "mainClass": "models.PassengerTest",
+            "projectName": "Flight_Management_cce1ef17"
+        },
+        {
+            "type": "java",
             "name": "GateTest",
             "request": "launch",
             "mainClass": "models.GateTest",
