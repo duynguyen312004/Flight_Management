@@ -21,6 +21,7 @@ public class Flight {
         this.status = new SimpleStringProperty(status);
     }
 
+    // Property Getters
     public StringProperty flightNumberProperty() {
         return flightNumber;
     }
@@ -43,5 +44,63 @@ public class Flight {
 
     public StringProperty statusProperty() {
         return status;
+    }
+
+    // String Getters
+    public String getFlightNumber() {
+        return flightNumber.get();
+    }
+
+    public String getDepartureLocation() {
+        return departureLocation.get();
+    }
+
+    public String getArrivalLocation() {
+        return arrivalLocation.get();
+    }
+
+    public String getDepartureTime() {
+        return departureTime.get();
+    }
+
+    public String getArrivalTime() {
+        return arrivalTime.get();
+    }
+
+    public String getStatus() {
+        return status.get();
+    }
+
+    // String Setters (optional)
+    public void setFlightNumber(String flightNumber) {
+        this.flightNumber.set(flightNumber);
+    }
+
+    public void setDepartureLocation(String departureLocation) {
+        this.departureLocation.set(departureLocation);
+    }
+
+    public void setArrivalLocation(String arrivalLocation) {
+        this.arrivalLocation.set(arrivalLocation);
+    }
+
+    public void setDepartureTime(String departureTime) {
+        this.departureTime.set(departureTime);
+    }
+
+    public void setArrivalTime(String arrivalTime) {
+        this.arrivalTime.set(arrivalTime);
+    }
+
+    public void setStatus(String status) {
+        this.status.set(status);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Flight [flightNumber=%s, departureLocation=%s, arrivalLocation=%s, departureTime=%s, arrivalTime=%s, status=%s]",
+                getFlightNumber(), getDepartureLocation(), getArrivalLocation(), getDepartureTime(), getArrivalTime(),
+                getStatus());
     }
 }

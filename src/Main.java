@@ -16,6 +16,8 @@ public class Main extends Application {
 
             // Đặt tiêu đề cho cửa sổ
             primaryStage.setTitle("Flight Management System");
+            primaryStage.getIcons()
+                    .add(new javafx.scene.image.Image(getClass().getResourceAsStream("assets/flight.png")));
 
             // Thiết lập Scene và kích thước
             primaryStage.setScene(new Scene(root, 800, 600));

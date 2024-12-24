@@ -1,17 +1,24 @@
-<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.FlightController">
-    <TableView fx:id="flightTable" layoutX="20.0" layoutY="50.0" prefWidth="760.0" prefHeight="300.0">
-        <columns>
-            <TableColumn text="Flight Number" fx:id="flightNumberColumn" />
-            <TableColumn text="Departure" fx:id="departureColumn" />
-            <TableColumn text="Arrival" fx:id="arrivalColumn" />
-            <TableColumn text="Departure Time" fx:id="departureTimeColumn" />
-            <TableColumn text="Arrival Time" fx:id="arrivalTimeColumn" />
-            <TableColumn text="Status" fx:id="statusColumn" />
-        </columns>
-    </TableView>
+<?xml version="1.0" encoding="UTF-8"?>
 
-    <Button text="Add Flight" layoutX="20.0" layoutY="370.0" onAction="#handleAddFlight" />
-    <Button text="Edit Flight" layoutX="120.0" layoutY="370.0" onAction="#handleEditFlight" />
-    <Button text="Delete Flight" layoutX="220.0" layoutY="370.0" onAction="#handleDeleteFlight" />
-    <Button text="Refresh" layoutX="320.0" layoutY="370.0" onAction="#handleRefresh" />
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.FlightController">
+    <TableView fx:id="flightTable" AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="100.0">
+    <columns>
+        <TableColumn text="Flight Number" fx:id="flightNumberColumn" />
+        <TableColumn text="Departure" fx:id="departureColumn" />
+        <TableColumn text="Arrival" fx:id="arrivalColumn" />
+        <TableColumn text="Departure Time" fx:id="departureTimeColumn" />
+        <TableColumn text="Arrival Time" fx:id="arrivalTimeColumn" />
+        <TableColumn text="Status" fx:id="statusColumn" />
+    </columns>
+</TableView>
+
+    <Button text="Add Flight" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" onAction="#handleAddFlight" />
+    <Button text="Edit Flight" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="120.0" onAction="#handleEditFlight" />
+    <Button text="Delete Flight" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="220.0" onAction="#handleDeleteFlight" />
+    <Button text="Refresh" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="320.0" onAction="#handleRefresh" />
 </AnchorPane>
