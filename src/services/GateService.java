@@ -18,116 +18,121 @@ public class GateService {
         String query = "SELECT gate_number, is_available FROM gate";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()) {
+                PreparedStatement statement = connection.prepareStatement(query);
+                ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
-                int gateNumber = resultSet.getInt("gate_number");
+                String gateNumber = resultSet.getString("gate_number");
                 boolean isAvailable = resultSet.getBoolean("is_available");
                 gates.add(new Gate(gateNumber, isAvailable));
             }
         } catch (SQLException e) {
+            System.err.println("Error fetching all gates.");
             e.printStackTrace();
         }
 
         return gates;
     }
 
-    // 2. Gán chuyến bay cho một cổng (đặt is_available = 0)
-    public boolean assignFlight(int gateNumber) {
-        String checkQuery = "SELECT is_available FROM gate WHERE gate_number = ?";
-        String updateQuery = "UPDATE gate SET is_available = 0 WHERE gate_number = ?";
+    // 2. Lấy cổng liên quan đến một chuyến bay
+    public Gate getGateByFlight(String flightNumber) {
+        String query = "SELECT g.gate_number, g.is_available " +
+                "FROM gate g " +
+                "JOIN flight f ON g.gate_number = f.assigned_gate " +
+                "WHERE f.flight_number = ?";
+        Gate gate = null;
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement checkStmt = connection.prepareStatement(checkQuery);
-             PreparedStatement updateStmt = connection.prepareStatement(updateQuery)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
-            
-            checkStmt.setInt(1, gateNumber);
-            ResultSet resultSet = checkStmt.executeQuery();
+            statement.setString(1, flightNumber);
+            ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
+                String gateNumber = resultSet.getString("gate_number");
                 boolean isAvailable = resultSet.getBoolean("is_available");
-
-                if (!isAvailable) {
-                    System.out.println("Gate " + gateNumber + " is not available for assignment.");
-                    return false;
-                }
+                gate = new Gate(gateNumber, isAvailable);
             } else {
-                System.out.println("Gate " + gateNumber + " does not exist.");
-                return false;
+                System.out.println("No gate found for flight: " + flightNumber);
             }
-
-          
-            updateStmt.setInt(1, gateNumber);
-            updateStmt.executeUpdate();
-            System.out.println("Gate " + gateNumber + " has been assigned successfully.");
-            return true;
-
         } catch (SQLException e) {
+            System.err.println("Error fetching gate for flight: " + flightNumber);
             e.printStackTrace();
         }
 
-        return false;
+        return gate;
     }
 
-    // 3. Giải phóng cổng (đặt is_available = 1)
-    public boolean releaseGate(int gateNumber) {
-        String checkQuery = "SELECT is_available FROM gate WHERE gate_number = ?";
-        String updateQuery = "UPDATE gate SET is_available = 1 WHERE gate_number = ?";
+    // 3. Gán chuyến bay cho một cổng (đặt is_available = 0)
+    public boolean assignFlightToGate(String gateNumber) {
+        String query = "UPDATE gate SET is_available = 0 WHERE gate_number = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement checkStmt = connection.prepareStatement(checkQuery);
-             PreparedStatement updateStmt = connection.prepareStatement(updateQuery)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
-            checkStmt.setInt(1, gateNumber);
-            ResultSet resultSet = checkStmt.executeQuery();
-
-            if (resultSet.next()) {
-                boolean isAvailable = resultSet.getBoolean("is_available");
-
-                if (isAvailable) {
-                    System.out.println("Gate " + gateNumber + " is already available.");
-                    return false;
-                }
-            } else {
-                System.out.println("Gate " + gateNumber + " does not exist.");
-                return false;
-            }
-
-
-            updateStmt.setInt(1, gateNumber);
-            updateStmt.executeUpdate();
-            System.out.println("Gate " + gateNumber + " has been released successfully.");
-            return true;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    public boolean setAvailable(int gateNumber, boolean isAvailable) {
-        String query = "UPDATE gate SET is_available = ? WHERE gate_number = ?";
-    
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-    
-            statement.setBoolean(1, isAvailable); 
-            statement.setInt(2, gateNumber); 
-    
+            statement.setString(1, gateNumber);
             int rowsUpdated = statement.executeUpdate();
+
             if (rowsUpdated > 0) {
-                System.out.println("Gate " + gateNumber + " updated successfully.");
+                System.out.println("Gate " + gateNumber + " assigned successfully.");
+                return true;
+            } else {
+                System.out.println("Gate " + gateNumber + " not found or already assigned.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error assigning flight to gate: " + gateNumber);
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    // 4. Giải phóng cổng (đặt is_available = 1)
+    public boolean releaseGate(String gateNumber) {
+        String query = "UPDATE gate SET is_available = 1 WHERE gate_number = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, gateNumber);
+            int rowsUpdated = statement.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                System.out.println("Gate " + gateNumber + " released successfully.");
+                return true;
+            } else {
+                System.out.println("Gate " + gateNumber + " not found or already available.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error releasing gate: " + gateNumber);
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    // 5. Cập nhật trạng thái cổng
+    public boolean updateGateAvailability(String gateNumber, boolean isAvailable) {
+        String query = "UPDATE gate SET is_available = ? WHERE gate_number = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setBoolean(1, isAvailable);
+            statement.setString(2, gateNumber);
+            int rowsUpdated = statement.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                System.out.println("Gate " + gateNumber + " availability updated successfully.");
                 return true;
             } else {
                 System.out.println("Gate " + gateNumber + " not found.");
             }
         } catch (SQLException e) {
+            System.err.println("Error updating gate availability: " + gateNumber);
             e.printStackTrace();
         }
-    
+
         return false;
     }
 }

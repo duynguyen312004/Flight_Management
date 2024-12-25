@@ -21,4 +21,6 @@
     <Button text="Edit Flight" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="120.0" onAction="#handleEditFlight" />
     <Button text="Delete Flight" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="220.0" onAction="#handleDeleteFlight" />
     <Button text="Refresh" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="320.0" onAction="#handleRefresh" />
+    <Button text="View Details" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="420.0" onAction="#handleViewDetails" />
+
 </AnchorPane>

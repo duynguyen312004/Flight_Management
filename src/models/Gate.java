@@ -1,35 +1,50 @@
 package models;
 
-public class Gate {
-    private int gateNumber;
-    private boolean isAvailable; // true = khả dụng, false = không khả dụng
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
-    public Gate(int gateNumber, boolean isAvailable) {
-        this.gateNumber = gateNumber;
-        this.isAvailable = isAvailable;
+public class Gate {
+    private final StringProperty gateNumber;
+    private final BooleanProperty isAvailable;
+
+    public Gate(String gateNumber, boolean isAvailable) {
+        this.gateNumber = new SimpleStringProperty(gateNumber);
+        this.isAvailable = new SimpleBooleanProperty(isAvailable);
     }
 
-    public int getGateNumber() {
+    // Property Getters
+    public StringProperty gateNumberProperty() {
         return gateNumber;
     }
 
-    public void setGateNumber(int gateNumber) {
-        this.gateNumber = gateNumber;
-    }
-
-    public boolean isAvailable() {
+    public BooleanProperty isAvailableProperty() {
         return isAvailable;
     }
 
+    // Standard Getters and Setters
+    public String getGateNumber() {
+        return gateNumber.get();
+    }
+
+    public void setGateNumber(String gateNumber) {
+        this.gateNumber.set(gateNumber);
+    }
+
+    public boolean isAvailable() {
+        return isAvailable.get();
+    }
+
     public void setAvailable(boolean available) {
-        this.isAvailable = available;
+        this.isAvailable.set(available);
     }
 
     @Override
     public String toString() {
         return "Gate{" +
-                "gateNumber=" + gateNumber +
-                ", isAvailable=" + isAvailable +
+                "gateNumber='" + getGateNumber() + '\'' +
+                ", isAvailable=" + isAvailable() +
                 '}';
     }
 }

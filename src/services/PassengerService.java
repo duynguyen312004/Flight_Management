@@ -18,8 +18,8 @@ public class PassengerService {
         String query = "SELECT id, name, email, phone FROM passenger";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()) {
+                PreparedStatement statement = connection.prepareStatement(query);
+                ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 String id = resultSet.getString("id");
@@ -28,11 +28,29 @@ public class PassengerService {
                 String phone = resultSet.getString("phone");
                 passengers.add(new Passenger(id, name, email, phone));
             }
+
+            System.out.println("[PassengerService] Loaded " + passengers.size() + " passengers.");
         } catch (SQLException e) {
+            System.err.println("[PassengerService] Error while fetching passengers.");
             e.printStackTrace();
         }
 
         return passengers;
+    }
+
+    public int getPassengerCountByFlight(String flightNumber) {
+        String query = "SELECT COUNT(DISTINCT passenger_id) FROM ticket WHERE flight_number = ?";
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, flightNumber);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     // 2. Thêm hành khách mới vào database
@@ -40,7 +58,7 @@ public class PassengerService {
         String query = "INSERT INTO passenger (id, name, email, phone) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, passenger.getId());
             statement.setString(2, passenger.getName());
@@ -49,10 +67,11 @@ public class PassengerService {
 
             int rowsInserted = statement.executeUpdate();
             if (rowsInserted > 0) {
-                System.out.println("Passenger added successfully.");
+                System.out.println("[PassengerService] Passenger added successfully.");
                 return true;
             }
         } catch (SQLException e) {
+            System.err.println("[PassengerService] Error while adding passenger.");
             e.printStackTrace();
         }
 
@@ -64,7 +83,7 @@ public class PassengerService {
         String query = "UPDATE passenger SET name = ?, email = ?, phone = ? WHERE id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, passenger.getName());
             statement.setString(2, passenger.getEmail());
@@ -73,10 +92,13 @@ public class PassengerService {
 
             int rowsUpdated = statement.executeUpdate();
             if (rowsUpdated > 0) {
-                System.out.println("Passenger updated successfully.");
+                System.out.println("[PassengerService] Passenger updated successfully.");
                 return true;
+            } else {
+                System.out.println("[PassengerService] Passenger with ID " + passenger.getId() + " not found.");
             }
         } catch (SQLException e) {
+            System.err.println("[PassengerService] Error while updating passenger.");
             e.printStackTrace();
         }
 
@@ -88,15 +110,18 @@ public class PassengerService {
         String query = "DELETE FROM passenger WHERE id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, passengerId);
             int rowsDeleted = statement.executeUpdate();
             if (rowsDeleted > 0) {
-                System.out.println("Passenger deleted successfully.");
+                System.out.println("[PassengerService] Passenger deleted successfully.");
                 return true;
+            } else {
+                System.out.println("[PassengerService] Passenger with ID " + passengerId + " not found.");
             }
         } catch (SQLException e) {
+            System.err.println("[PassengerService] Error while deleting passenger.");
             e.printStackTrace();
         }
 
@@ -106,40 +131,34 @@ public class PassengerService {
     // 5. Lấy thông tin vé của hành khách
     public String getTicketsByPassenger(String passengerId) {
         String query = "SELECT ticket_id, flight_number, seat_number, seat_class, price FROM ticket WHERE passenger_id = ?";
-    
+
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-    
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
             statement.setString(1, passengerId);
             ResultSet resultSet = statement.executeQuery();
             StringBuilder tickets = new StringBuilder();
-    
-            // Kiểm tra nếu có vé của hành khách
+
             if (!resultSet.isBeforeFirst()) {
-                return "No tickets found for this passenger."; // Trả về thông báo nếu không tìm thấy vé
+                return "[PassengerService] No tickets found for passenger with ID: " + passengerId;
             }
-    
-            // Duyệt qua các vé của hành khách và lấy thông tin
+
             while (resultSet.next()) {
-                String ticketID = resultSet.getString("ticket_id");
-                String flightNumber = resultSet.getString("flight_number");
-                String seatNumber = resultSet.getString("seat_number");
-                String seatClass = resultSet.getString("seat_class");
-                double price = resultSet.getDouble("price");
-    
-                // Thêm thông tin vé vào StringBuilder
-                tickets.append("Ticket ID: ").append(ticketID)
-                        .append(", Flight Number: ").append(flightNumber)
-                        .append(", Seat Number: ").append(seatNumber)
-                        .append(", Seat Class: ").append(seatClass)
-                        .append(", Price: ").append(price).append("\n");
+                tickets.append(String.format(
+                        "Ticket ID: %s, Flight Number: %s, Seat Number: %s, Seat Class: %s, Price: %.2f%n",
+                        resultSet.getString("ticket_id"),
+                        resultSet.getString("flight_number"),
+                        resultSet.getString("seat_number"),
+                        resultSet.getString("seat_class"),
+                        resultSet.getDouble("price")));
             }
-    
-            return tickets.toString(); // Trả về thông tin của tất cả các vé
+
+            return tickets.toString();
         } catch (SQLException e) {
+            System.err.println("[PassengerService] Error while fetching tickets for passenger with ID: " + passengerId);
             e.printStackTrace();
         }
-    
-        return "An error occurred while fetching the tickets."; // Nếu có lỗi trong quá trình truy vấn
+
+        return "[PassengerService] An error occurred while fetching tickets.";
     }
 }

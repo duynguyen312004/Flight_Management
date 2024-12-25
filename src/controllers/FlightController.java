@@ -1,10 +1,15 @@
 package controllers;
 
+import java.io.IOException;
 import java.util.List;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.stage.Stage;
 import services.FlightService;
 import models.Flight;
 
@@ -60,6 +65,31 @@ public class FlightController {
             System.out.println("Flights loaded successfully: " + flights.size());
         }
         flightTable.getItems().setAll(flights);
+    }
+
+    @FXML
+    private void handleViewDetails() {
+        Flight selectedFlight = flightTable.getSelectionModel().getSelectedItem();
+        if (selectedFlight != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/FlightDetails.fxml"));
+                Parent root = loader.load();
+
+                FlightDetailsController controller = loader.getController();
+                controller.loadFlightDetails(selectedFlight);
+
+                Stage stage = new Stage();
+                stage.setTitle("Flight Details");
+                stage.getIcons()
+                        .add(new javafx.scene.image.Image(getClass().getResourceAsStream("/assets/flight.png")));
+                stage.setScene(new Scene(root));
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("No flight selected!");
+        }
     }
 
     @FXML

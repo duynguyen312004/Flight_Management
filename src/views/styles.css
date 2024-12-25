@@ -1,0 +1,46 @@
+/* File: styles.css */
+
+.root {
+    -fx-font-family: Arial;
+    -fx-background-color: #f9f9f9;
+}
+
+/* Label cho tiêu đề */
+.header-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+    -fx-text-alignment: center;
+}
+
+/* Tiêu đề của từng phần */
+.section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #555555;
+}
+
+/* Thông tin nhỏ */
+.small-info {
+    -fx-font-size: 12px;
+    -fx-text-fill: #666666;
+}
+
+/* Nút hành động */
+.action-button {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 5px 10px;
+}
+
+.action-button:hover {
+    -fx-background-color: #45a049;
+}
+
+.action-button:pressed {
+    -fx-background-color: #388e3c;
+}

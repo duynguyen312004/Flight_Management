@@ -9,5 +9,6 @@
         "c:\\Program Files\\Java\\javafx-sdk-23.0.1\\lib\\javafx.fxml.jar",
         "c:\\Program Files\\Java\\javafx-sdk-23.0.1\\lib\\javafx.graphics.jar",
         "c:\\Program Files\\Java\\javafx-sdk-23.0.1\\lib\\javafx.media.jar"
-    ]
+    ],
+    "css.lint.vendorPrefix": "ignore"
 }
