@@ -4,13 +4,13 @@ import config.DatabaseConnection;
 import models.FlightCrew;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDateTime;
 
 public class FlightCrewService {
 
-    // 1. Lấy tất cả các phi hành đoàn từ database
+    // 1. Lấy tất cả phi hành đoàn từ database
     public List<FlightCrew> getAllFlightCrews() {
         List<FlightCrew> flightCrews = new ArrayList<>();
         String query = "SELECT fc.id, fc.crew_role, fc.flight_number, fc.assignment_date, " +
@@ -41,135 +41,94 @@ public class FlightCrewService {
         return flightCrews;
     }
 
+    // 2. Thêm phi hành đoàn mới
     public boolean addFlightCrew(FlightCrew flightCrew) {
         String insertEmployeeQuery = "INSERT INTO employee (id, name, address, role) VALUES (?, ?, ?, ?)";
         String insertFlightCrewQuery = "INSERT INTO flight_crew (id, crew_role, flight_number, assignment_date) VALUES (?, ?, ?, ?)";
         
-        Connection connection = null;
-        try {
-            connection = DatabaseConnection.getConnection();
-            connection.setAutoCommit(false);  
-    
-            // Thêm nhân viên vào bảng employee nếu chưa tồn tại
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            connection.setAutoCommit(false); // Bắt đầu giao dịch
+
+            // Kiểm tra và thêm nhân viên vào bảng employee nếu chưa tồn tại
             String checkEmployeeQuery = "SELECT COUNT(*) FROM employee WHERE id = ?";
             try (PreparedStatement checkStatement = connection.prepareStatement(checkEmployeeQuery)) {
                 checkStatement.setString(1, flightCrew.getId());
                 ResultSet resultSet = checkStatement.executeQuery();
-    
                 if (resultSet.next() && resultSet.getInt(1) == 0) {
-                    // Thêm nhân viên vào bảng employee nếu không tồn tại
                     try (PreparedStatement insertEmployeeStatement = connection.prepareStatement(insertEmployeeQuery)) {
                         insertEmployeeStatement.setString(1, flightCrew.getId());
-                        insertEmployeeStatement.setString(2, flightCrew.getName()); 
-                        insertEmployeeStatement.setString(3, flightCrew.getAddress()); 
+                        insertEmployeeStatement.setString(2, flightCrew.getName());
+                        insertEmployeeStatement.setString(3, flightCrew.getAddress());
                         insertEmployeeStatement.setString(4, flightCrew.getRole());
                         insertEmployeeStatement.executeUpdate();
                     }
                 }
             }
-    
-            // Kiểm tra sự tồn tại của flight_number trong bảng flight trước khi thêm phi hành đoàn
+
+            // Kiểm tra tồn tại của chuyến bay
             String checkFlightQuery = "SELECT COUNT(*) FROM flight WHERE flight_number = ?";
             try (PreparedStatement checkFlightStatement = connection.prepareStatement(checkFlightQuery)) {
                 checkFlightStatement.setString(1, flightCrew.getFlightNumber());
                 ResultSet flightResult = checkFlightStatement.executeQuery();
                 if (flightResult.next() && flightResult.getInt(1) == 0) {
-                    System.out.println("Flight with flight_number " + flightCrew.getFlightNumber() + " does not exist in the database.");
-                    connection.rollback(); 
+                    System.err.println("[FlightCrewService] Flight does not exist: " + flightCrew.getFlightNumber());
+                    connection.rollback(); // Hủy giao dịch
                     return false;
                 }
             }
-    
+
             // Thêm phi hành đoàn vào bảng flight_crew
             try (PreparedStatement statement = connection.prepareStatement(insertFlightCrewQuery)) {
-                statement.setString(1, flightCrew.getId()); 
-                statement.setString(2, flightCrew.getCrewRole()); 
-                
-                if (flightCrew.getFlightNumber() == null || flightCrew.getFlightNumber().isEmpty()) {
-                    statement.setNull(3, java.sql.Types.VARCHAR);  
-                } else {
-                    statement.setString(3, flightCrew.getFlightNumber());
-                }
-                
-                if (flightCrew.getAssignmentDate() != null) {
-                    statement.setTimestamp(4, Timestamp.valueOf(flightCrew.getAssignmentDate()));
-                } else {
-                    System.out.println("Assignment date is invalid.");
-                    connection.rollback();  
-                    return false;
-                }
-    
+                statement.setString(1, flightCrew.getId());
+                statement.setString(2, flightCrew.getCrewRole());
+                statement.setString(3, flightCrew.getFlightNumber());
+                statement.setTimestamp(4, flightCrew.getAssignmentDate() != null ? Timestamp.valueOf(flightCrew.getAssignmentDate()) : null);
+
                 int rowsInserted = statement.executeUpdate();
                 if (rowsInserted > 0) {
-                    System.out.println("Flight Crew added successfully.");
-                    connection.commit();  
+                    System.out.println("[FlightCrewService] Flight Crew added successfully.");
+                    connection.commit(); // Xác nhận giao dịch
                     return true;
                 } else {
-                    System.out.println("Failed to add flight crew.");
-                    connection.rollback(); 
+                    System.err.println("[FlightCrewService] Failed to add Flight Crew.");
+                    connection.rollback(); // Hủy giao dịch nếu thất bại
                 }
             }
-    
         } catch (SQLException e) {
             e.printStackTrace();
-            try {
-                if (connection != null) {
-                    connection.rollback();  
-                }
-            } catch (SQLException rollbackEx) {
-                rollbackEx.printStackTrace();
-            }
-        } finally {
-            try {
-                if (connection != null) {
-                    connection.setAutoCommit(true);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
-        
+
         return false;
     }
-    
 
+    // 3. Cập nhật thông tin phi hành đoàn
     public boolean updateFlightCrew(String flightCrewId, String field, String newValue) {
         String query = "UPDATE flight_crew SET " + field + " = ? WHERE id = ?";
 
-        // Kiểm tra xem trường có hợp lệ không
         if (!isValidField(field)) {
-            System.out.println("Invalid field name.");
-            return false;  // Trường không hợp lệ
+            System.err.println("[FlightCrewService] Invalid field: " + field);
+            return false;
         }
 
         try (Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement statement = connection.prepareStatement(query)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
-            // Set giá trị mới vào câu lệnh SQL
-            statement.setString(1, newValue);  // Giá trị mới cho trường
-            statement.setString(2, flightCrewId);  // ID của phi hành đoàn
+            statement.setString(1, newValue);
+            statement.setString(2, flightCrewId);
 
-            int rowsUpdated = statement.executeUpdate();  // Thực thi câu lệnh SQL
-
+            int rowsUpdated = statement.executeUpdate();
             if (rowsUpdated > 0) {
-                System.out.println("Flight Crew field updated successfully.");
-                return true;  // Nếu có bản ghi được cập nhật
+                System.out.println("[FlightCrewService] Field updated successfully for Flight Crew: " + flightCrewId);
+                return true;
             } else {
-                System.out.println("No flight crew found with the given ID.");
+                System.err.println("[FlightCrewService] No Flight Crew found with ID: " + flightCrewId);
             }
         } catch (SQLException e) {
-            e.printStackTrace();  // In lỗi nếu có sự cố
+            e.printStackTrace();
         }
 
-        return false;  // Nếu không có gì được cập nhật
+        return false;
     }
-
-    // Phương thức kiểm tra tính hợp lệ của trường (field)
-    private boolean isValidField(String field) {
-        // Danh sách các trường hợp lệ
-        return field.equals("crew_role") || field.equals("flight_number") || field.equals("assignment_date");
-    }
-
 
     // 4. Xóa phi hành đoàn theo ID
     public boolean deleteFlightCrew(String flightCrewId) {
@@ -181,7 +140,7 @@ public class FlightCrewService {
             statement.setString(1, flightCrewId);
             int rowsDeleted = statement.executeUpdate();
             if (rowsDeleted > 0) {
-                System.out.println("Flight Crew deleted successfully.");
+                System.out.println("[FlightCrewService] Flight Crew deleted successfully.");
                 return true;
             }
         } catch (SQLException e) {
@@ -218,21 +177,26 @@ public class FlightCrewService {
                         .append("\n");
             }
 
-            return flightDetails.length() > 0 ? flightDetails.toString() : "No flights found for this flight crew.";
+            if (flightDetails.length() > 0) {
+                return flightDetails.toString();
+            } else {
+                System.err.println("[FlightCrewService] No flights found for Flight Crew ID: " + flightCrewId);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return "An error occurred while fetching the flight details.";
+        return "[FlightCrewService] An error occurred while fetching flight details.";
     }
 
+    // 6. Lấy phi hành đoàn theo ID
     public FlightCrew getFlightCrewById(String id) {
         String query = "SELECT fc.id, fc.crew_role, fc.flight_number, fc.assignment_date, " +
-                        "e.name, e.address, e.role FROM flight_crew fc " +
-                        "JOIN employee e ON fc.id = e.id WHERE fc.id = ?";
+                       "e.name, e.address, e.role FROM flight_crew fc " +
+                       "JOIN employee e ON fc.id = e.id WHERE fc.id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, id);
             ResultSet resultSet = statement.executeQuery();
@@ -250,5 +214,43 @@ public class FlightCrewService {
         }
 
         return null;
+    }
+
+    // 7. Lấy danh sách phi hành đoàn theo chuyến bay
+public List<FlightCrew> getFlightCrewByFlight(String flightNumber) {
+    List<FlightCrew> flightCrews = new ArrayList<>();
+    String query = "SELECT fc.id, fc.crew_role, fc.flight_number, fc.assignment_date, " +
+                   "e.name, e.address, e.role FROM flight_crew fc " +
+                   "JOIN employee e ON fc.id = e.id WHERE fc.flight_number = ?";
+
+    try (Connection connection = DatabaseConnection.getConnection();
+         PreparedStatement statement = connection.prepareStatement(query)) {
+
+        statement.setString(1, flightNumber);
+        ResultSet resultSet = statement.executeQuery();
+
+        while (resultSet.next()) {
+            String id = resultSet.getString("id");
+            String name = resultSet.getString("name");
+            String address = resultSet.getString("address");
+            String role = resultSet.getString("role");
+            String crewRole = resultSet.getString("crew_role");
+            Timestamp assignmentDateTimestamp = resultSet.getTimestamp("assignment_date");
+            LocalDateTime assignmentDate = assignmentDateTimestamp != null ? assignmentDateTimestamp.toLocalDateTime() : null;
+
+            FlightCrew flightCrew = new FlightCrew(id, name, address, role, crewRole, flightNumber, assignmentDate);
+            flightCrews.add(flightCrew);
+        }
+    } catch (SQLException e) {
+        System.err.println("[FlightCrewService] Error while fetching flight crew for flight: " + flightNumber);
+        e.printStackTrace();
+    }
+
+    return flightCrews;
+}
+
+    // Kiểm tra tính hợp lệ của trường cập nhật
+    private boolean isValidField(String field) {
+        return field.equals("crew_role") || field.equals("flight_number") || field.equals("assignment_date");
     }
 }

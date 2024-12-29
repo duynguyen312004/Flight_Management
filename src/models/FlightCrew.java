@@ -1,47 +1,68 @@
 package models;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class FlightCrew extends Employee {
-    private String crewRole;
-    private String flightNumber;
-    private LocalDateTime assignmentDate;
+    private final StringProperty crewRole;
+    private final StringProperty flightNumber;
+    private final StringProperty assignmentDate;
 
     // Constructor
     public FlightCrew(String id, String name, String address, String role, String crewRole, String flightNumber, LocalDateTime assignmentDate) {
         super(id, name, address, role);
-        this.crewRole = crewRole;
-        this.flightNumber = flightNumber;
-        this.assignmentDate = assignmentDate;
+        this.crewRole = new SimpleStringProperty(crewRole);
+        this.flightNumber = new SimpleStringProperty(flightNumber);
+        this.assignmentDate = new SimpleStringProperty(
+                assignmentDate != null ? assignmentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "N/A");
     }
 
-    // Getters and Setters
-    public String getCrewRole() {
+    // Properties
+    public StringProperty crewRoleProperty() {
         return crewRole;
     }
 
-    public void setCrewRole(String crewRole) {
-        this.crewRole = crewRole;
-    }
-
-    public String getFlightNumber() {
+    public StringProperty flightNumberProperty() {
         return flightNumber;
     }
 
-    public void setFlightNumber(String flightNumber) {
-        this.flightNumber = flightNumber;
-    }
-
-    public LocalDateTime getAssignmentDate() {
+    public StringProperty assignmentDateProperty() {
         return assignmentDate;
     }
 
+    // Getters
+    public String getCrewRole() {
+        return crewRole.get();
+    }
+
+    public String getFlightNumber() {
+        return flightNumber.get();
+    }
+
+    public String getAssignmentDate() {
+        return assignmentDate.get();
+    }
+
+    // Setters
+    public void setCrewRole(String crewRole) {
+        this.crewRole.set(crewRole);
+    }
+
+    public void setFlightNumber(String flightNumber) {
+        this.flightNumber.set(flightNumber);
+    }
+
     public void setAssignmentDate(LocalDateTime assignmentDate) {
-        this.assignmentDate = assignmentDate;
+        this.assignmentDate.set(assignmentDate != null
+                ? assignmentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                : "N/A");
     }
 
     @Override
     public String getDetails() {
-        return super.getDetails() + ", Crew Role=" + crewRole + ", Flight Number=" + flightNumber + ", Assignment Date=" + assignmentDate;
+        return super.getDetails() + ", Crew Role=" + getCrewRole() + ", Flight Number=" + getFlightNumber() + ", Assignment Date=" + getAssignmentDate();
     }
 }

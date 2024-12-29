@@ -1,22 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.FlightDetailsController" stylesheets="@styles.css" styleClass="root">
-    <!-- Tiêu đề chuyến bay -->
-    <Label fx:id="flightInfoLabel" layoutX="20.0" layoutY="20.0" styleClass="header-label" text="Flight Information" wrapText="true" />
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.FlightDetailsController" spacing="10" alignment="TOP_LEFT" stylesheets="@styles.css">
+    <!-- Thông tin chuyến bay -->
+    <Label fx:id="flightInfoLabel" styleClass="header-label" text="Flight Information" wrapText="true" />
 
     <!-- Thông tin cổng -->
-    <Label fx:id="gateInfoLabel" layoutX="20.0" layoutY="100.0" styleClass="section-title" text="Gate: No Gate Assigned" />
+    <Label fx:id="gateInfoLabel" styleClass="section-title" text="Gate Information" />
 
-    <!-- Thông tin Summary -->
-    <Label layoutX="20.0" layoutY="140.0" styleClass="section-title" text="Summary:" />
-    <Label fx:id="ticketCountLabel" layoutX="40.0" layoutY="170.0" styleClass="small-info" text="Total Tickets: 0" />
-    <Label fx:id="passengerCountLabel" layoutX="40.0" layoutY="190.0" styleClass="small-info" text="Total Passengers: 0" />
+    <!-- Tóm tắt -->
+    <VBox spacing="5">
+        <Label styleClass="section-title" text="Summary:" />
+        <Label fx:id="ticketCountLabel" styleClass="small-info" text="Total Tickets: 0" />
+        <Label fx:id="passengerCountLabel" styleClass="small-info" text="Total Passengers: 0" />
+    </VBox>
+
+    <!-- Thông tin máy bay -->
+    <VBox spacing="5">
+        <Label styleClass="section-title" text="Airplane Information:" />
+        <Label fx:id="airplaneIdLabel" styleClass="small-info" text="ID: N/A" />
+        <Label fx:id="seatCapacityLabel" styleClass="small-info" text="Seat Capacity: N/A" />
+        <Label fx:id="airplaneStatusLabel" styleClass="small-info" text="Status: N/A" />
+    </VBox>
+
+    <!-- Phi hành đoàn -->
+    <VBox spacing="5">
+        <Label styleClass="section-title" text="Flight Crew:" />
+        <TableView fx:id="flightCrewTable" prefHeight="150">
+            <columns>
+                <TableColumn fx:id="crewNameColumn" text="Name"  />
+                <TableColumn fx:id="crewRoleColumn" text="Role"  />
+                <TableColumn fx:id="assignmentDateColumn" text="Assignment Date" />
+            </columns>
+        </TableView>
+    </VBox>
 
     <!-- Các nút hành động -->
-    <Button layoutX="20.0" layoutY="240.0" text="Ticket Details" styleClass="action-button" onAction="#handleViewTicketDetails" />
-    <Button layoutX="150.0" layoutY="240.0" text="Passenger Details" styleClass="action-button" onAction="#handleViewPassengerDetails" />
-</AnchorPane>
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="View Ticket Details" styleClass="action-button" onAction="#handleViewTicketDetails" />
+    </HBox>
+</VBox>

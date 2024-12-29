@@ -15,8 +15,8 @@ public class TicketService {
         String query = "SELECT ticket_id, flight_number, passenger_id, seat_number, seat_class, price FROM ticket";
 
         try (Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query);
-                ResultSet resultSet = statement.executeQuery()) {
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 tickets.add(mapResultSetToTicket(resultSet));
@@ -31,24 +31,52 @@ public class TicketService {
         return tickets;
     }
 
+    // 2. Lấy số lượng vé theo chuyến bay
     public int getTicketCountByFlight(String flightNumber) {
         String query = "SELECT COUNT(*) FROM ticket WHERE flight_number = ?";
         try (Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
             statement.setString(1, flightNumber);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return resultSet.getInt(1);
+                int count = resultSet.getInt(1);
+                System.out.println("[TicketService] Ticket count for flight " + flightNumber + ": " + count);
+                return count;
             }
         } catch (SQLException e) {
+            System.err.println("[TicketService] Error while counting tickets for flight: " + flightNumber);
             e.printStackTrace();
         }
         return 0;
     }
 
-    // 2. Thêm vé mới vào cơ sở dữ liệu
+    // 3. Lấy danh sách vé theo chuyến bay
+    public List<Ticket> getTicketsByFlight(String flightNumber) {
+        List<Ticket> tickets = new ArrayList<>();
+        String query = "SELECT ticket_id, flight_number, passenger_id, seat_number, seat_class, price FROM ticket WHERE flight_number = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, flightNumber);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                tickets.add(mapResultSetToTicket(resultSet));
+            }
+
+            System.out.println("[TicketService] Loaded " + tickets.size() + " tickets for flight number: " + flightNumber);
+        } catch (SQLException e) {
+            System.err.println("[TicketService] Error while fetching tickets for flight number: " + flightNumber);
+            e.printStackTrace();
+        }
+
+        return tickets;
+    }
+
+    // 4. Thêm vé mới vào cơ sở dữ liệu
     public boolean addTicket(Ticket ticket) {
-        // Kiểm tra sự tồn tại của flight_number và passenger_id
         if (!isFlightExist(ticket.getFlightNumber())) {
             System.err.println("[TicketService] Flight number " + ticket.getFlightNumber() + " does not exist.");
             return false;
@@ -62,7 +90,7 @@ public class TicketService {
         String insertQuery = "INSERT INTO ticket (ticket_id, flight_number, passenger_id, seat_number, seat_class, price) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(insertQuery)) {
+             PreparedStatement statement = connection.prepareStatement(insertQuery)) {
 
             statement.setString(1, ticket.getTicketID());
             statement.setString(2, ticket.getFlightNumber());
@@ -73,7 +101,7 @@ public class TicketService {
 
             int rowsInserted = statement.executeUpdate();
             if (rowsInserted > 0) {
-                System.out.println("[TicketService] Ticket added successfully.");
+                System.out.println("[TicketService] Ticket added successfully: " + ticket.getTicketID());
                 return true;
             }
         } catch (SQLException e) {
@@ -84,12 +112,12 @@ public class TicketService {
         return false;
     }
 
-    // 3. Cập nhật thông tin vé trong cơ sở dữ liệu
+    // 5. Cập nhật thông tin vé trong cơ sở dữ liệu
     public boolean updateTicket(Ticket ticket) {
         String query = "UPDATE ticket SET flight_number = ?, passenger_id = ?, seat_number = ?, seat_class = ?, price = ? WHERE ticket_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, ticket.getFlightNumber());
             statement.setString(2, ticket.getPassengerID());
@@ -100,7 +128,7 @@ public class TicketService {
 
             int rowsUpdated = statement.executeUpdate();
             if (rowsUpdated > 0) {
-                System.out.println("[TicketService] Ticket updated successfully.");
+                System.out.println("[TicketService] Ticket updated successfully: " + ticket.getTicketID());
                 return true;
             } else {
                 System.err.println("[TicketService] Ticket with ID " + ticket.getTicketID() + " not found.");
@@ -113,17 +141,17 @@ public class TicketService {
         return false;
     }
 
-    // 4. Xóa vé khỏi cơ sở dữ liệu
+    // 6. Xóa vé khỏi cơ sở dữ liệu
     public boolean deleteTicket(String ticketID) {
         String query = "DELETE FROM ticket WHERE ticket_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, ticketID);
             int rowsDeleted = statement.executeUpdate();
             if (rowsDeleted > 0) {
-                System.out.println("[TicketService] Ticket deleted successfully.");
+                System.out.println("[TicketService] Ticket deleted successfully: " + ticketID);
                 return true;
             } else {
                 System.err.println("[TicketService] Ticket with ID " + ticketID + " not found.");
@@ -136,47 +164,22 @@ public class TicketService {
         return false;
     }
 
-    // 5. Lấy vé của hành khách từ cơ sở dữ liệu
-    public List<Ticket> getTicketsByPassenger(String passengerId) {
-        List<Ticket> tickets = new ArrayList<>();
-        String query = "SELECT ticket_id, flight_number, seat_number, seat_class, price FROM ticket WHERE passenger_id = ?";
-
-        try (Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setString(1, passengerId);
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                tickets.add(mapResultSetToTicket(resultSet));
-            }
-
-            System.out.println(
-                    "[TicketService] Loaded " + tickets.size() + " tickets for passenger ID " + passengerId + ".");
-        } catch (SQLException e) {
-            System.err.println("[TicketService] Error while fetching tickets for passenger ID " + passengerId + ".");
-            e.printStackTrace();
-        }
-
-        return tickets;
-    }
-
-    // 6. Kiểm tra sự tồn tại của chuyến bay
+    // 7. Kiểm tra sự tồn tại của chuyến bay
     private boolean isFlightExist(String flightNumber) {
         String query = "SELECT COUNT(*) FROM flight WHERE flight_number = ?";
         return checkExistence(query, flightNumber);
     }
 
-    // 7. Kiểm tra sự tồn tại của hành khách
+    // 8. Kiểm tra sự tồn tại của hành khách
     private boolean isPassengerExist(String passengerId) {
         String query = "SELECT COUNT(*) FROM passenger WHERE id = ?";
         return checkExistence(query, passengerId);
     }
 
-    // 8. Hàm kiểm tra sự tồn tại chung
+    // 9. Hàm kiểm tra sự tồn tại chung
     private boolean checkExistence(String query, String value) {
         try (Connection connection = DatabaseConnection.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, value);
             ResultSet resultSet = statement.executeQuery();
@@ -188,7 +191,7 @@ public class TicketService {
         return false;
     }
 
-    // 9. Ánh xạ ResultSet sang đối tượng Ticket
+    // 10. Ánh xạ ResultSet sang đối tượng Ticket
     private Ticket mapResultSetToTicket(ResultSet resultSet) throws SQLException {
         return new Ticket(
                 resultSet.getString("ticket_id"),
