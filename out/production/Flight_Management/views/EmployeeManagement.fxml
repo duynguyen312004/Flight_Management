@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+
+<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.EmployeeController" stylesheets="@../css/employee.css">
+    <!-- ComboBox để chọn loại nhân viên -->
+    <HBox spacing="10" AnchorPane.topAnchor="10.0" AnchorPane.leftAnchor="20.0">
+        <Label text="Select Employee Type:" />
+        <ComboBox fx:id="employeeTypeComboBox" prefWidth="200.0" />
+    </HBox>
+
+    <!-- Bảng Employee -->
+    <TableView fx:id="employeeTable" AnchorPane.topAnchor="50.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="80.0">
+        <columns>
+            <TableColumn text="ID" fx:id="idColumn" />
+            <TableColumn text="Name" fx:id="nameColumn" />
+            <TableColumn text="Role" fx:id="roleColumn" />
+            <TableColumn text="Additional Info" fx:id="additionalInfoColumn" />
+        </columns>
+    </TableView>
+
+    <!-- Các nút chức năng -->
+    <HBox spacing="15" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
+        <Button text="Add Employee" fx:id="addEmployeeButton" onAction="#handleAddEmployee" />
+        <Button text="Edit Employee" fx:id="editEmployeeButton" onAction="#handleEditEmployee" />
+        <Button text="Delete Employee" fx:id="deleteEmployeeButton" onAction="#handleDeleteEmployee" />
+        <Button text="Refresh" fx:id="refreshButton" onAction="#handleRefresh" />
+    </HBox>
+</AnchorPane>

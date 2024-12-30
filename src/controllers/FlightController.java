@@ -14,6 +14,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import services.FlightService;
 import models.Flight;
+import javafx.scene.control.TableCell;
+import javafx.scene.layout.HBox;
+import javafx.util.Callback;
 
 public class FlightController {
 
@@ -31,6 +34,8 @@ public class FlightController {
     private TableColumn<Flight, String> arrivalTimeColumn;
     @FXML
     private TableColumn<Flight, String> statusColumn;
+    @FXML
+    private TableColumn<Flight, Void> actionColumn;
 
     @FXML
     private TableColumn<Flight, String> gateColumn;
@@ -43,6 +48,9 @@ public class FlightController {
     @SuppressWarnings("unused")
     @FXML
     public void initialize() {
+        // Disable row clicking
+        flightTable.setSelectionModel(null);
+
         // Liên kết cột với thuộc tính
         flightNumberColumn.setCellValueFactory(cellData -> cellData.getValue().flightNumberProperty());
         departureColumn.setCellValueFactory(cellData -> cellData.getValue().departureLocationProperty());
@@ -53,17 +61,19 @@ public class FlightController {
         gateColumn.setCellValueFactory(cellData -> cellData.getValue().assignedGateProperty());
         airplaneColumn.setCellValueFactory(cellData -> cellData.getValue().airplaneIdProperty());
 
+        addActionButtonsToTable();
+
         // Đặt kích thước cột theo tỷ lệ
         flightTable.widthProperty().addListener((observable, oldValue, newValue) -> {
             double tableWidth = newValue.doubleValue();
-            flightNumberColumn.setPrefWidth(tableWidth * 0.1); // 10% bảng
-            departureColumn.setPrefWidth(tableWidth * 0.15); // 15% bảng
-            arrivalColumn.setPrefWidth(tableWidth * 0.15); // 15% bảng
-            departureTimeColumn.setPrefWidth(tableWidth * 0.15); // 15% bảng
-            arrivalTimeColumn.setPrefWidth(tableWidth * 0.15); // 15% bảng
-            statusColumn.setPrefWidth(tableWidth * 0.1); // 10% bảng
-            gateColumn.setPrefWidth(tableWidth * 0.1); // 10% bảng
-            airplaneColumn.setPrefWidth(tableWidth * 0.1); // 10% bảng
+            flightNumberColumn.setPrefWidth(tableWidth * 0.1);
+            departureColumn.setPrefWidth(tableWidth * 0.1);
+            arrivalColumn.setPrefWidth(tableWidth * 0.1);
+            departureTimeColumn.setPrefWidth(tableWidth * 0.12);
+            arrivalTimeColumn.setPrefWidth(tableWidth * 0.12);
+            statusColumn.setPrefWidth(tableWidth * 0.1);
+            gateColumn.setPrefWidth(tableWidth * 0.08);
+            airplaneColumn.setPrefWidth(tableWidth * 0.1);
         });
 
         loadFlightData();
@@ -79,28 +89,74 @@ public class FlightController {
         flightTable.getItems().setAll(flights);
     }
 
+    private void addActionButtonsToTable() {
+        Callback<TableColumn<Flight, Void>, TableCell<Flight, Void>> cellFactory = param -> new TableCell<>() {
+            private final HBox actionBox = new HBox(10);
+            private final javafx.scene.control.Button editButton = new javafx.scene.control.Button("Edit");
+            private final javafx.scene.control.Button deleteButton = new javafx.scene.control.Button("Delete");
+            private final javafx.scene.control.Button viewDetailsButton = new javafx.scene.control.Button("View Details");
+
+            {
+                editButton.setStyle("-fx-background-color: #f3a520; -fx-text-fill: white;");
+                deleteButton.setStyle("-fx-background-color: red; -fx-text-fill: white;");
+                viewDetailsButton.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white;");
+
+                editButton.setOnAction(event -> {
+                    Flight flight = getTableView().getItems().get(getIndex());
+                    System.out.println("Editing flight: " + flight);
+                    handleEditFlight();
+                });
+
+                deleteButton.setOnAction(event -> {
+                    Flight flight = getTableView().getItems().get(getIndex());
+                    System.out.println("Deleting flight: " + flight);
+                    handleDeleteFlight();
+                });
+
+                viewDetailsButton.setOnAction(event -> {
+                    Flight flight = getTableView().getItems().get(getIndex());
+                    System.out.println("Viewing details for flight: " + flight);
+                    handleViewDetails(flight);
+                });
+
+                actionBox.getChildren().addAll(editButton, deleteButton, viewDetailsButton);
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(actionBox);
+                }
+            }
+        };
+
+        actionColumn.setCellFactory(cellFactory);
+    }
+
+
     @FXML
-    private void handleViewDetails() {
-        Flight selectedFlight = flightTable.getSelectionModel().getSelectedItem();
-        if (selectedFlight != null) {
+    private void handleViewDetails(Flight flight) {
+        if (flight != null) {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/FlightDetails.fxml"));
                 Parent root = loader.load();
 
                 FlightDetailsController controller = loader.getController();
-                controller.loadFlightDetails(selectedFlight);
+                controller.loadFlightDetails(flight);
 
                 Stage stage = new Stage();
-                stage.setTitle("Flight Details");
-                stage.getIcons()
-                        .add(new javafx.scene.image.Image(getClass().getResourceAsStream("/assets/flight.png")));
+                stage.setTitle("Flight Details - " + flight.getFlightNumber());
+                stage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/assets/flight.png")));
                 stage.setScene(new Scene(root));
                 stage.show();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("No flight selected!");
+            System.out.println("Flight data is null!");
         }
     }
 
