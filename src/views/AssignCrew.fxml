@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controllers.AssignEmployeeController" spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+    <Label text="Assign Employees to Flight and Gate" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+
+    <!-- Flight Info -->
+    <HBox spacing="10">
+        <Label text="Flight Number:" />
+        <TextField fx:id="flightNumberField" editable="false" />
+    </HBox>
+
+    <HBox spacing="10">
+        <Label text="Gate:" />
+        <TextField fx:id="gateField" editable="false" />
+    </HBox>
+
+    <!-- Flight Crew Section -->
+    <Label text="Assign Flight Crew" style="-fx-font-size: 16px;" />
+    <TableView fx:id="crewTable">
+        <columns>
+            <TableColumn text="ID" fx:id="crewIdColumn" />
+            <TableColumn text="Name" fx:id="crewNameColumn" />
+            <TableColumn text="Role" fx:id="crewRoleColumn" />
+        </columns>
+    </TableView>
+    <HBox spacing="10">
+        <Label text="Crew Role:" />
+        <ComboBox fx:id="crewRoleComboBox" promptText="Select Role" />
+    </HBox>
+    <Button text="Assign Crew" onAction="#handleAssignCrew" />
+
+    <!-- Ground Staff Section -->
+    <Label text="Assign Ground Staff" style="-fx-font-size: 16px;" />
+    <TableView fx:id="staffTable">
+        <columns>
+            <TableColumn text="ID" fx:id="staffIdColumn" />
+            <TableColumn text="Name" fx:id="staffNameColumn" />
+            <TableColumn text="Role" fx:id="staffRoleColumn" />
+        </columns>
+    </TableView>
+    <Button text="Assign Staff to Gate" onAction="#handleAssignStaff" />
+
+    <!-- Save and Close -->
+    <Button text="Close" onAction="#handleClose" />
+</VBox>

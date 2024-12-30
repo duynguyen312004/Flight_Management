@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Modality;
@@ -69,11 +70,13 @@ public class FlightController {
             flightNumberColumn.setPrefWidth(tableWidth * 0.1);
             departureColumn.setPrefWidth(tableWidth * 0.1);
             arrivalColumn.setPrefWidth(tableWidth * 0.1);
-            departureTimeColumn.setPrefWidth(tableWidth * 0.12);
-            arrivalTimeColumn.setPrefWidth(tableWidth * 0.12);
+            departureTimeColumn.setPrefWidth(tableWidth * 0.15);
+            arrivalTimeColumn.setPrefWidth(tableWidth * 0.15);
             statusColumn.setPrefWidth(tableWidth * 0.1);
             gateColumn.setPrefWidth(tableWidth * 0.08);
             airplaneColumn.setPrefWidth(tableWidth * 0.1);
+            actionColumn.setPrefWidth(tableWidth * 0.12); // 10%
+
         });
 
         loadFlightData();
@@ -106,13 +109,13 @@ public class FlightController {
                 editButton.setOnAction(event -> {
                     Flight flight = getTableView().getItems().get(getIndex());
                     System.out.println("Editing flight: " + flight);
-                    handleEditFlight();
+                    handleEditFlight(flight);
                 });
 
                 deleteButton.setOnAction(event -> {
                     Flight flight = getTableView().getItems().get(getIndex());
                     System.out.println("Deleting flight: " + flight);
-                    handleDeleteFlight();
+                    handleDeleteFlight(flight);
                 });
 
                 viewDetailsButton.setOnAction(event -> {
@@ -164,17 +167,90 @@ public class FlightController {
 
     @FXML
     private void handleAddFlight() {
-        System.out.println("Add Flight clicked");
+        try {
+            // Load FXML cho Add Flight
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/AddFlight.fxml"));
+            Parent root = loader.load();
+
+            // Hiển thị cửa sổ Add Flight
+            Stage stage = new Stage();
+            stage.setTitle("Add Flight");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL); // Chặn tương tác với các cửa sổ khác
+            stage.setWidth(600); // Đảm bảo chiều rộng đủ lớn
+            stage.setHeight(500); // Đảm bảo chiều cao đủ lớn
+            stage.showAndWait(); // Chờ đến khi cửa sổ Add Flight đóng lại
+
+            // Làm mới dữ liệu sau khi thêm
+            loadFlightData();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to open Add Flight screen.", Alert.AlertType.ERROR);
+        }
+    }
+
+    private void handleEditFlight(Flight flight) {
+        if (flight == null) {
+            showAlert("No Flight Selected", "Please select a flight to edit.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        try {
+            // Load giao diện Edit Flight
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/EditFlight.fxml"));
+            Parent root = loader.load();
+
+            // Lấy controller của EditFlight và truyền dữ liệu chuyến bay vào
+            EditFlightController editFlightController = loader.getController();
+            editFlightController.setFlight(flight); // Truyền chuyến bay vào controller
+
+            // Hiển thị giao diện Edit Flight
+            Stage stage = new Stage();
+            stage.setTitle("Edit Flight - " + flight.getFlightNumber());
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL); // Chặn tương tác với các cửa sổ khác
+            stage.showAndWait(); // Chờ cho đến khi cửa sổ chỉnh sửa được đóng lại
+
+            // Làm mới dữ liệu sau khi chỉnh sửa
+            loadFlightData();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to open Edit Flight screen.", Alert.AlertType.ERROR);
+        }
     }
 
     @FXML
-    private void handleEditFlight() {
-        System.out.println("Edit Flight clicked");
-    }
+    private void handleDeleteFlight(Flight flight) {
+        if (flight == null) {
+            showAlert("Error", "No flight selected for deletion.", Alert.AlertType.ERROR);
+            return;
+        }
 
-    @FXML
-    private void handleDeleteFlight() {
-        System.out.println("Delete Flight clicked");
+        // Hiển thị hộp thoại xác nhận
+        Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationAlert.setTitle("Confirm Deletion");
+        confirmationAlert.setHeaderText("Are you sure you want to delete this flight?");
+        confirmationAlert.setContentText("Flight Number: " + flight.getFlightNumber());
+
+        // Nếu người dùng nhấn OK, thực hiện xóa
+        confirmationAlert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    // Gọi service để xử lý xóa
+                    boolean success = flightService.deleteFlight(flight.getFlightNumber());
+                    if (success) {
+                        showAlert("Success", "Flight deleted successfully.", Alert.AlertType.INFORMATION);
+                        loadFlightData(); // Làm mới danh sách chuyến bay
+                    } else {
+                        showAlert("Error", "Failed to delete flight.", Alert.AlertType.ERROR);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    showAlert("Error", "An error occurred while deleting the flight.", Alert.AlertType.ERROR);
+                }
+            }
+        });
     }
 
     @FXML
@@ -191,7 +267,7 @@ public class FlightController {
             Stage stage = new Stage();
             stage.setTitle("Manage Employee");
             stage.getIcons()
-                    .add(new javafx.scene.image.Image(getClass().getResourceAsStream("/assets/flight.png")));
+                    .add(new javafx.scene.image.Image(getClass().getResourceAsStream("/assets/employees.png")));
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
@@ -209,6 +285,8 @@ public class FlightController {
             // Hiển thị cửa sổ Manage Gate
             Stage stage = new Stage();
             stage.setTitle("Manage Gate");
+            stage.getIcons()
+                    .add(new javafx.scene.image.Image(getClass().getResourceAsStream("/assets/gate.png")));
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL); // Chặn tương tác với cửa sổ khác
             stage.showAndWait(); // Đợi cho đến khi cửa sổ Manage Gate đóng lại
@@ -229,6 +307,8 @@ public class FlightController {
             // Hiển thị cửa sổ Manage Gate
             Stage stage = new Stage();
             stage.setTitle("Manage Airplane");
+            stage.getIcons()
+                    .add(new javafx.scene.image.Image(getClass().getResourceAsStream("/assets/plane.png")));
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL); // Chặn tương tác với cửa sổ khác
             stage.showAndWait(); // Đợi cho đến khi cửa sổ Manage Gate đóng lại

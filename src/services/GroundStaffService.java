@@ -165,4 +165,56 @@ public class GroundStaffService {
 
         return null;
     }
+
+    public List<GroundStaff> getAvailableGroundStaff() {
+        List<GroundStaff> availableStaff = new ArrayList<>();
+        String query = """
+                SELECT gs.id, e.name, e.address, e.role
+                FROM ground_staff gs
+                JOIN employee e ON gs.id = e.id
+                WHERE gs.assigned_gate IS NULL
+                """;
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query);
+                ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String id = resultSet.getString("id");
+                String name = resultSet.getString("name");
+                String address = resultSet.getString("address");
+                String role = resultSet.getString("role");
+
+                GroundStaff groundStaff = new GroundStaff(id, name, address, role, null, null);
+                availableStaff.add(groundStaff);
+            }
+        } catch (SQLException e) {
+            System.err.println("[GroundStaffService] Error while fetching available ground staff.");
+            e.printStackTrace();
+        }
+
+        return availableStaff;
+    }
+
+    public boolean assignStaffToGate(String staffId, String gateNumber) {
+        String query = """
+                UPDATE ground_staff
+                SET assigned_gate = ?, assignment_date = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """;
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, gateNumber);
+            statement.setString(2, staffId);
+
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("[GroundStaffService] Error while assigning staff to gate.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

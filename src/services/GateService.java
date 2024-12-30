@@ -64,7 +64,7 @@ public class GateService {
     }
 
     // 3. Gán chuyến bay cho một cổng (đặt is_available = 0)
-    public boolean assignFlightToGate(String gateNumber) {
+    public boolean assignGate(String gateNumber) {
         String query = "UPDATE gate SET is_available = 0 WHERE gate_number = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
@@ -182,6 +182,50 @@ public class GateService {
             e.printStackTrace();
         }
         return "None"; // Không có chuyến bay nào đang sử dụng
+    }
+
+    public List<Gate> getAvailableGates() {
+        List<Gate> gates = new ArrayList<>();
+        String query = "SELECT gate_number, is_available FROM gate WHERE is_available = 1";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query);
+                ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String gateNumber = resultSet.getString("gate_number");
+                boolean isAvailable = resultSet.getBoolean("is_available");
+
+                gates.add(new Gate(gateNumber, isAvailable));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return gates;
+    }
+
+    // 5. Giải phóng tất cả nhân viên liên quan đến cổng
+    public boolean releaseStaffAssignedToGate(String gateNumber) {
+        String query = "UPDATE ground_staff SET assigned_gate = NULL WHERE assigned_gate = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, gateNumber);
+            int rowsUpdated = statement.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                System.out.println("Released all staff assigned to Gate: " + gateNumber);
+                return true;
+            } else {
+                System.out.println("No staff were assigned to Gate: " + gateNumber);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error releasing staff assigned to Gate: " + gateNumber);
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
 }
