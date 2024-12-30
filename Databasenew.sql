@@ -46,9 +46,9 @@ CREATE TABLE flight (
 CREATE TABLE ground_staff (
     id VARCHAR(50) PRIMARY KEY,
     assigned_gate VARCHAR(50),
-    assignment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    assignment_date DATETIME DEFAULT NULL,
     FOREIGN KEY (id) REFERENCES employee(id),
-    FOREIGN KEY (assigned_gate) REFERENCES gate(gate_number)
+    FOREIGN KEY (assigned_gate) REFERENCES gate(gate_number) ON DELETE SET NULL
 );
 
 -- Bảng flight_crew

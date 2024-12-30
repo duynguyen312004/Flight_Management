@@ -1,51 +1,77 @@
 package models;
 
-public class Airplane {
-    private String airplaneId;
-    private int seatCapacity;
-    private String status;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
-    // Constructor
-    public Airplane(String airplaneId, int seatCapacity, String status) {
-        this.airplaneId = airplaneId;
-        this.seatCapacity = seatCapacity;
-        this.status = status;
+public class Airplane {
+    private final StringProperty airplaneId;
+    private final StringProperty seatCapacity;
+    private final StringProperty status;
+
+    public Airplane(String airplaneId, int seatCapacity) {
+        this(airplaneId, seatCapacity, "Available"); // Default status
     }
 
-    public String getAirplaneId() {
+    public Airplane(String airplaneId, int seatCapacity, String status) {
+        this.airplaneId = new SimpleStringProperty(airplaneId);
+        this.seatCapacity = new SimpleStringProperty(String.valueOf(seatCapacity));
+        this.status = new SimpleStringProperty(status);
+    }
+
+    // Getters for StringProperty
+    public StringProperty airplaneIdProperty() {
         return airplaneId;
     }
 
-    public void setAirplaneId(String airplaneId) {
-        this.airplaneId = airplaneId;
+    public StringProperty seatCapacityProperty() {
+        return seatCapacity;
+    }
+
+    public StringProperty statusProperty() {
+        return status;
+    }
+
+    // Getters for values
+    public String getAirplaneId() {
+        return airplaneId.get();
     }
 
     public int getSeatCapacity() {
-        return seatCapacity;
+        return Integer.parseInt(seatCapacity.get());
+    }
+
+    public String getStatus() {
+        return status.get();
+    }
+
+    // Setters
+    public void setAirplaneId(String airplaneId) {
+        this.airplaneId.set(airplaneId);
     }
 
     public void setSeatCapacity(int seatCapacity) {
         if (seatCapacity < 0) {
             throw new IllegalArgumentException("Seat capacity must be >= 0");
         }
-        this.seatCapacity = seatCapacity;
-    }
-
-    public String getStatus() {
-        return status;
+        this.seatCapacity.set(String.valueOf(seatCapacity));
     }
 
     public void setStatus(String status) {
         if (!status.equals("Available") && !status.equals("In Use")) {
             throw new IllegalArgumentException("Invalid status. Must be 'Available' or 'In Use'");
         }
-        this.status = status;
+        this.status.set(status);
     }
 
     @Override
     public String toString() {
-        return "Airplane ID: " + airplaneId + 
-               ", Seat Capacity: " + seatCapacity + 
-               ", Status: " + status;
+        return "Airplane ID: " + getAirplaneId() +
+                ", Seat Capacity: " + getSeatCapacity() +
+                ", Status: " + getStatus();
     }
+
+    public boolean isAvailable() {
+        return "Available".equals(this.status.get());
+    }
+
 }

@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.FlightDetailsController" spacing="10" alignment="TOP_LEFT" stylesheets="@styles.css">
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.FlightDetailsController" spacing="10" alignment="TOP_LEFT" stylesheets="@../css/flight_details.css">
     <!-- Thông tin chuyến bay -->
     <Label fx:id="flightInfoLabel" styleClass="header-label" text="Flight Information" wrapText="true" />
 

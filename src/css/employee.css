@@ -1,0 +1,73 @@
+/* Table styling */
+.employee-table {
+    -fx-border-color: #d3d3d3;
+    -fx-font-size: 14px;
+    -fx-background-color: #f4f4f4;
+    -fx-border-radius: 8px;
+    -fx-border-insets: 2px;
+}
+
+.employee-table .column-header {
+    -fx-background-color: linear-gradient(to bottom, #0077b6, #005f73);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: #94d2bd;
+}
+
+.employee-table .table-row-cell:filled {
+    -fx-background-color: #ffffff;
+    -fx-alignment: CENTER-LEFT;
+}
+
+.employee-table .table-row-cell:filled:hover {
+    -fx-background-color: #e9f5f5;
+}
+
+.employee-table .table-row-cell:filled:selected {
+    -fx-background-color: #94d2bd;
+    -fx-text-fill: #000;
+    -fx-font-weight: bold;
+    -fx-border-color: #005f73;
+    -fx-border-width: 0 0 1px 0;
+}
+
+/* Button styling */
+.action-button {
+    -fx-background-color: linear-gradient(to bottom, #0a9396, #005f73);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0, 1, 1);
+}
+
+.action-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #0077b6, #005f73);
+    -fx-cursor: hand;
+}
+
+.action-button:pressed {
+    -fx-background-color: #004349;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.2), 4, 0, 0, 1);
+}
+
+/* ComboBox styling */
+.combo-box {
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 5px;
+    -fx-padding: 5;
+    -fx-background-color: #f4f4f4;
+}
+
+.combo-box:hover {
+    -fx-border-color: #94d2bd;
+}
+
+/* HBox spacing */
+.hbox-container {
+    -fx-spacing: 15px;
+    -fx-padding: 10px 0;
+}

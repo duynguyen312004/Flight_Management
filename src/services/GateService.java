@@ -135,4 +135,53 @@ public class GateService {
 
         return false;
     }
+
+    // Thêm Gate
+    public boolean addGate(Gate gate) {
+        String query = "INSERT INTO gate (gate_number, is_available) VALUES (?, ?)";
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, gate.getGateNumber());
+            statement.setBoolean(2, gate.isAvailable());
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error adding gate: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Xóa Gate
+    public boolean deleteGate(String gateNumber) {
+        String query = "DELETE FROM gate WHERE gate_number = ?";
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, gateNumber);
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error deleting gate: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public String getFlightUsingGate(String gateNumber) {
+        String query = "SELECT flight_number FROM flight WHERE assigned_gate = ? AND status != 'Cancelled'";
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, gateNumber);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getString("flight_number");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "None"; // Không có chuyến bay nào đang sử dụng
+    }
+
 }

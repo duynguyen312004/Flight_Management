@@ -14,12 +14,12 @@ public class GroundStaffService {
     public List<GroundStaff> getAllGroundStaff() {
         List<GroundStaff> groundStaffList = new ArrayList<>();
         String query = "SELECT gs.id, gs.assigned_gate, gs.assignment_date, " +
-                       "e.name, e.address, e.role FROM ground_staff gs " +
-                       "JOIN employee e ON gs.id = e.id";
+                "e.name, e.address, e.role FROM ground_staff gs " +
+                "JOIN employee e ON gs.id = e.id";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()) {
+                PreparedStatement statement = connection.prepareStatement(query);
+                ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 String id = resultSet.getString("id");
@@ -28,7 +28,9 @@ public class GroundStaffService {
                 String role = resultSet.getString("role");
                 String assignedGate = resultSet.getString("assigned_gate");
                 Timestamp assignmentDateTimestamp = resultSet.getTimestamp("assignment_date");
-                LocalDateTime assignmentDate = assignmentDateTimestamp != null ? assignmentDateTimestamp.toLocalDateTime() : null;
+                LocalDateTime assignmentDate = assignmentDateTimestamp != null
+                        ? assignmentDateTimestamp.toLocalDateTime()
+                        : null;
 
                 GroundStaff groundStaff = new GroundStaff(id, name, address, role, assignedGate, assignmentDate);
                 groundStaffList.add(groundStaff);
@@ -42,89 +44,81 @@ public class GroundStaffService {
 
     // 2. Thêm nhân viên mặt đất mới vào database
     public boolean addGroundStaff(GroundStaff groundStaff) {
-        String insertEmployeeQuery = "INSERT INTO employee (id, name, address, role) VALUES (?, ?, ?, ?)";
-        String insertGroundStaffQuery = "INSERT INTO ground_staff (id, assigned_gate, assignment_date) VALUES (?, ?, ?)";
-    
-        try (Connection connection = DatabaseConnection.getConnection()) {
+        String employeeQuery = "INSERT INTO employee (id, name, address, role) VALUES (?, ?, ?, ?)";
+        String groundStaffQuery = "INSERT INTO ground_staff (id) VALUES (?)";
+
+        Connection connection = null; // Khai báo biến connection ở đây
+        try {
+            connection = DatabaseConnection.getConnection();
             connection.setAutoCommit(false);
-    
-            // Thêm nhân viên vào bảng employee nếu chưa tồn tại
-            String checkEmployeeQuery = "SELECT COUNT(*) FROM employee WHERE id = ?";
-            try (PreparedStatement checkStatement = connection.prepareStatement(checkEmployeeQuery)) {
-                checkStatement.setString(1, groundStaff.getId());
-                ResultSet resultSet = checkStatement.executeQuery();
-    
-                if (resultSet.next() && resultSet.getInt(1) == 0) {
-                    try (PreparedStatement insertEmployeeStatement = connection.prepareStatement(insertEmployeeQuery)) {
-                        insertEmployeeStatement.setString(1, groundStaff.getId());
-                        insertEmployeeStatement.setString(2, groundStaff.getName());
-                        insertEmployeeStatement.setString(3, groundStaff.getAddress());
-                        insertEmployeeStatement.setString(4, groundStaff.getRole());
-                        insertEmployeeStatement.executeUpdate();
-                    }
-                }
+
+            // Thêm dữ liệu vào bảng `employee`
+            try (PreparedStatement employeeStatement = connection.prepareStatement(employeeQuery)) {
+                employeeStatement.setString(1, groundStaff.getId());
+                employeeStatement.setString(2, groundStaff.getName());
+                employeeStatement.setString(3, groundStaff.getAddress());
+                employeeStatement.setString(4, groundStaff.getRole());
+                employeeStatement.executeUpdate();
             }
-    
-            // Thêm nhân viên mặt đất vào bảng ground_staff
-            try (PreparedStatement statement = connection.prepareStatement(insertGroundStaffQuery)) {
-                statement.setString(1, groundStaff.getId());
-                statement.setString(2, groundStaff.getAssignedGate());
-                if (groundStaff.getAssignmentDate() != null) {
-                    statement.setTimestamp(3, Timestamp.valueOf(groundStaff.getAssignmentDate()));
-                } else {
-                    statement.setNull(3, Types.TIMESTAMP);
-                }
-    
-                int rowsInserted = statement.executeUpdate();
-                if (rowsInserted > 0) {
-                    connection.commit();
-                    System.out.println("[GroundStaffService] Ground Staff added successfully.");
-                    return true;
-                } else {
-                    connection.rollback();
-                    System.err.println("[GroundStaffService] Failed to add Ground Staff.");
-                }
+
+            // Thêm dữ liệu vào bảng `ground_staff`
+            try (PreparedStatement groundStaffStatement = connection.prepareStatement(groundStaffQuery)) {
+                groundStaffStatement.setString(1, groundStaff.getId());
+                groundStaffStatement.executeUpdate();
             }
+
+            connection.commit(); // Xác nhận giao dịch
+            return true;
+
         } catch (SQLException e) {
+            System.err.println("Error while adding ground staff: " + e.getMessage());
             e.printStackTrace();
+
+            // Hủy giao dịch nếu có lỗi
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    System.err.println("Error during rollback: " + rollbackEx.getMessage());
+                    rollbackEx.printStackTrace();
+                }
+            }
+
+            return false;
+
+        } finally {
+            // Đóng kết nối
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException closeEx) {
+                    System.err.println("Error while closing connection: " + closeEx.getMessage());
+                    closeEx.printStackTrace();
+                }
+            }
         }
-    
-        return false;
     }
-    
+
     // 3. Cập nhật thông tin nhân viên mặt đất
-    public boolean updateGroundStaff(String groundStaffId, String field, String newValue) {
-        String query = "UPDATE ground_staff SET " + field + " = ? WHERE id = ?";
-    
-        if (!isValidField(field)) {
-            System.err.println("[GroundStaffService] Invalid field name: " + field);
+    public boolean updateGroundStaff(GroundStaff staff) {
+        String query = "UPDATE employee SET name = ?, address = ?, role = ? WHERE id = ?";
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            // Gán các giá trị cập nhật
+            statement.setString(1, staff.getName());
+            statement.setString(2, staff.getAddress());
+            statement.setString(3, staff.getRole());
+            statement.setString(4, staff.getId());
+
+            // Thực hiện cập nhật
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error while updating ground staff: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
-    
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-    
-            statement.setString(1, newValue);
-            statement.setString(2, groundStaffId);
-    
-            int rowsUpdated = statement.executeUpdate();
-            if (rowsUpdated > 0) {
-                System.out.println("[GroundStaffService] Field '" + field + "' updated successfully for Ground Staff ID: " + groundStaffId);
-                return true;
-            } else {
-                System.err.println("[GroundStaffService] No Ground Staff found with ID: " + groundStaffId);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    
-        return false;
-    }
-    
-
-    // Kiểm tra trường hợp lệ
-    private boolean isValidField(String field) {
-        return field.equals("assigned_gate") || field.equals("assignment_date");
     }
 
     // 4. Xóa nhân viên mặt đất theo ID
@@ -132,7 +126,7 @@ public class GroundStaffService {
         String query = "DELETE FROM ground_staff WHERE id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, groundStaffId);
             int rowsDeleted = statement.executeUpdate();
@@ -147,18 +141,20 @@ public class GroundStaffService {
     // 5. Lấy nhân viên mặt đất theo ID
     public GroundStaff getGroundStaffById(String id) {
         String query = "SELECT gs.id, gs.assigned_gate, gs.assignment_date, " +
-                       "e.name, e.address, e.role FROM ground_staff gs " +
-                       "JOIN employee e ON gs.id = e.id WHERE gs.id = ?";
+                "e.name, e.address, e.role FROM ground_staff gs " +
+                "JOIN employee e ON gs.id = e.id WHERE gs.id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, id);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 String assignedGate = resultSet.getString("assigned_gate");
                 Timestamp assignmentDateTimestamp = resultSet.getTimestamp("assignment_date");
-                LocalDateTime assignmentDate = assignmentDateTimestamp != null ? assignmentDateTimestamp.toLocalDateTime() : null;
+                LocalDateTime assignmentDate = assignmentDateTimestamp != null
+                        ? assignmentDateTimestamp.toLocalDateTime()
+                        : null;
 
                 return new GroundStaff(id, resultSet.getString("name"), resultSet.getString("address"),
                         resultSet.getString("role"), assignedGate, assignmentDate);

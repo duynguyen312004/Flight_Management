@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.ManageAirplaneController">
+    <!-- TableView hiển thị danh sách máy bay -->
+    <TableView fx:id="airplaneTable" AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="100.0">
+        <columns>
+            <TableColumn text="Airplane ID" fx:id="airplaneIdColumn" />
+            <TableColumn text="Seat Capacity" fx:id="seatCapacityColumn" />
+            <TableColumn text="Status" fx:id="statusColumn" />
+            <TableColumn text="Flight Using" fx:id="flightUsingColumn" />
+
+        </columns>
+    </TableView>
+
+    <!-- Các nút chức năng -->
+    <HBox spacing="15" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
+        <Button text="Add Airplane" onAction="#handleAddAirplane" />
+        <Button text="Delete Airplane" onAction="#handleDeleteAirplane" />
+        <Button text="Refresh" onAction="#handleRefresh" />
+    </HBox>
+</AnchorPane>

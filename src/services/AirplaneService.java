@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AirplaneService {
 
@@ -19,7 +21,7 @@ public class AirplaneService {
                 """;
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, airplaneId);
             ResultSet resultSet = statement.executeQuery();
@@ -28,8 +30,7 @@ public class AirplaneService {
                 return new Airplane(
                         resultSet.getString("airplane_id"),
                         resultSet.getInt("seat_capacity"),
-                        resultSet.getString("status")
-                );
+                        resultSet.getString("status"));
             }
         } catch (SQLException e) {
             System.err.println("[AirplaneService] Error while fetching airplane with ID: " + airplaneId);
@@ -37,6 +38,28 @@ public class AirplaneService {
         }
 
         return null; // Trả về null nếu không tìm thấy
+    }
+
+    public List<Airplane> getAllAirplanes() {
+        List<Airplane> airplanes = new ArrayList<>();
+        String query = "SELECT airplane_id, seat_capacity, status FROM airplane";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query);
+                ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String airplaneId = resultSet.getString("airplane_id");
+                int seatCapacity = resultSet.getInt("seat_capacity");
+                String status = resultSet.getString("status");
+
+                airplanes.add(new Airplane(airplaneId, seatCapacity, status));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return airplanes;
     }
 
     // 2. Thêm máy bay mới vào cơ sở dữ liệu
@@ -47,7 +70,7 @@ public class AirplaneService {
                 """;
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, airplane.getAirplaneId());
             statement.setInt(2, airplane.getSeatCapacity());
@@ -72,7 +95,7 @@ public class AirplaneService {
                 """;
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setInt(1, airplane.getSeatCapacity());
             statement.setString(2, airplane.getStatus());
@@ -93,7 +116,7 @@ public class AirplaneService {
         String query = "DELETE FROM airplane WHERE airplane_id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             statement.setString(1, airplaneId);
             int rowsDeleted = statement.executeUpdate();
@@ -105,4 +128,22 @@ public class AirplaneService {
 
         return false;
     }
+
+    public String getFlightUsingAirplane(String airplaneId) {
+        String query = "SELECT flight_number FROM flight WHERE airplane_id = ? AND status != 'Cancelled'";
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, airplaneId);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getString("flight_number");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "None"; // Không có chuyến bay nào đang sử dụng
+    }
+
 }
