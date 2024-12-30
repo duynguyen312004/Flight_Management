@@ -89,12 +89,14 @@ public class FlightController {
         flightTable.getItems().setAll(flights);
     }
 
+    @SuppressWarnings("unused")
     private void addActionButtonsToTable() {
         Callback<TableColumn<Flight, Void>, TableCell<Flight, Void>> cellFactory = param -> new TableCell<>() {
             private final HBox actionBox = new HBox(10);
             private final javafx.scene.control.Button editButton = new javafx.scene.control.Button("Edit");
             private final javafx.scene.control.Button deleteButton = new javafx.scene.control.Button("Delete");
-            private final javafx.scene.control.Button viewDetailsButton = new javafx.scene.control.Button("View Details");
+            private final javafx.scene.control.Button viewDetailsButton = new javafx.scene.control.Button(
+                    "View Details");
 
             {
                 editButton.setStyle("-fx-background-color: #f3a520; -fx-text-fill: white;");
@@ -136,7 +138,6 @@ public class FlightController {
         actionColumn.setCellFactory(cellFactory);
     }
 
-
     @FXML
     private void handleViewDetails(Flight flight) {
         if (flight != null) {
@@ -149,7 +150,8 @@ public class FlightController {
 
                 Stage stage = new Stage();
                 stage.setTitle("Flight Details - " + flight.getFlightNumber());
-                stage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/assets/flight.png")));
+                stage.getIcons()
+                        .add(new javafx.scene.image.Image(getClass().getResourceAsStream("/assets/flight.png")));
                 stage.setScene(new Scene(root));
                 stage.show();
             } catch (IOException e) {
