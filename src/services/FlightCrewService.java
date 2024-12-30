@@ -273,4 +273,57 @@ public class FlightCrewService {
         return flightCrews;
     }
 
+    public List<FlightCrew> getAvailableCrew() {
+        List<FlightCrew> availableCrews = new ArrayList<>();
+        String query = """
+                SELECT fc.id, fc.crew_role, e.name, e.address, e.role
+                FROM flight_crew fc
+                JOIN employee e ON fc.id = e.id
+                WHERE fc.flight_number IS NULL
+                """;
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query);
+                ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String id = resultSet.getString("id");
+                String name = resultSet.getString("name");
+                String address = resultSet.getString("address");
+                String role = resultSet.getString("role");
+                String crewRole = resultSet.getString("crew_role");
+
+                FlightCrew flightCrew = new FlightCrew(id, name, address, role, crewRole, null, null);
+                availableCrews.add(flightCrew);
+            }
+        } catch (SQLException e) {
+            System.err.println("[FlightCrewService] Error while fetching available crew.");
+            e.printStackTrace();
+        }
+
+        return availableCrews;
+    }
+
+    public boolean assignCrewToFlight(String crewId, String flightNumber, String crewRole) {
+        String query = """
+                UPDATE flight_crew
+                SET flight_number = ?, crew_role = ?, assignment_date = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """;
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, flightNumber);
+            statement.setString(2, crewRole);
+            statement.setString(3, crewId);
+
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("[FlightCrewService] Error while assigning crew to flight.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

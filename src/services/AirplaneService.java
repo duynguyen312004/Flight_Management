@@ -146,4 +146,50 @@ public class AirplaneService {
         return "None"; // Không có chuyến bay nào đang sử dụng
     }
 
+    public List<Airplane> getAvailableAirplanes() {
+        List<Airplane> airplanes = new ArrayList<>();
+        String query = "SELECT airplane_id, seat_capacity, status FROM airplane WHERE status = 'Available'";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query);
+                ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String airplaneId = resultSet.getString("airplane_id");
+                int seatCapacity = resultSet.getInt("seat_capacity");
+                String status = resultSet.getString("status");
+
+                airplanes.add(new Airplane(airplaneId, seatCapacity, status));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return airplanes;
+    }
+
+    public void assignAirplane(String airplaneId) {
+        String query = "UPDATE airplane SET status = 'In Use' WHERE airplane_id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, airplaneId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void releaseAirplane(String airplaneId) {
+        String query = "UPDATE airplane SET status = 'Available' WHERE airplane_id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, airplaneId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
