@@ -28,12 +28,17 @@ public class FlightHistoryController {
     @FXML
     private TableColumn<FlightHistory, String> arrivalTimeColumn;
     @FXML
+    private TableColumn<FlightHistory, String> gateColumn;
+    @FXML
+    private TableColumn<FlightHistory, String> airplaneColumn;
+    @FXML
     private TableColumn<FlightHistory, String> statusColumn;
     @FXML
     private TableColumn<FlightHistory, Void> actionColumn;
 
     private final FlightHistoryService flightHistoryService = new FlightHistoryService();
 
+    @SuppressWarnings("unused")
     @FXML
     private void initialize() {
         // Liên kết cột dữ liệu
@@ -43,11 +48,27 @@ public class FlightHistoryController {
         departureTimeColumn.setCellValueFactory(cellData -> cellData.getValue().departureTimeProperty());
         arrivalTimeColumn.setCellValueFactory(cellData -> cellData.getValue().arrivalTimeProperty());
         statusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
+        gateColumn.setCellValueFactory(cellData -> cellData.getValue().assignedGateProperty());
+        airplaneColumn.setCellValueFactory(cellData -> cellData.getValue().airplaneIdProperty());
 
-        // Thêm nút `View Details` vào cột Actions
+        // Thêm nút "View Details" vào cột Actions
         addActionButtonsToTable();
 
-        // Tải dữ liệu ban đầu
+        // Đặt kích thước cột theo tỷ lệ
+        flightHistoryTable.widthProperty().addListener((observable, oldValue, newValue) -> {
+            double tableWidth = newValue.doubleValue();
+            flightNumberColumn.setPrefWidth(tableWidth * 0.1);
+            departureColumn.setPrefWidth(tableWidth * 0.1);
+            arrivalColumn.setPrefWidth(tableWidth * 0.1);
+            departureTimeColumn.setPrefWidth(tableWidth * 0.15);
+            arrivalTimeColumn.setPrefWidth(tableWidth * 0.15);
+            statusColumn.setPrefWidth(tableWidth * 0.1);
+            gateColumn.setPrefWidth(tableWidth * 0.1);
+            airplaneColumn.setPrefWidth(tableWidth * 0.1);
+            actionColumn.setPrefWidth(tableWidth * 0.1);
+        });
+
+        // Tải dữ liệu
         loadFlightHistoryData();
     }
 
@@ -59,13 +80,15 @@ public class FlightHistoryController {
 
     @SuppressWarnings("unused")
     private void addActionButtonsToTable() {
-        TableColumn<FlightHistory, Void> actionColumn = new TableColumn<>("Actions");
         actionColumn.setCellFactory(param -> new TableCell<>() {
             private final Button viewDetailsButton = new Button("View Details");
 
             {
                 viewDetailsButton.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white;");
-                viewDetailsButton.setOnAction(event -> handleViewDetails(getTableView().getItems().get(getIndex())));
+                viewDetailsButton.setOnAction(event -> {
+                    FlightHistory flightHistory = getTableView().getItems().get(getIndex());
+                    handleViewDetails(flightHistory);
+                });
             }
 
             @Override
@@ -75,11 +98,16 @@ public class FlightHistoryController {
                     setGraphic(null);
                 } else {
                     setGraphic(viewDetailsButton);
+                    setAlignment(javafx.geometry.Pos.CENTER); // Đặt nút vào giữa cột
+
                 }
             }
         });
 
-        flightHistoryTable.getColumns().add(actionColumn);
+        // Đảm bảo `actionColumn` đã được thêm vào bảng
+        if (!flightHistoryTable.getColumns().contains(actionColumn)) {
+            flightHistoryTable.getColumns().add(actionColumn);
+        }
     }
 
     @FXML
@@ -107,4 +135,5 @@ public class FlightHistoryController {
             e.printStackTrace();
         }
     }
+
 }

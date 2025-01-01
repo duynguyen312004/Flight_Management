@@ -337,6 +337,7 @@ public class FlightController {
             Stage stage = new Stage();
             stage.setTitle("Flight History");
             stage.setScene(new Scene(root));
+            stage.setMaximized(true);
             stage.show();
 
         } catch (IOException e) {

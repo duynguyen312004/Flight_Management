@@ -4,6 +4,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import models.FlightCrew;
 import models.FlightHistory;
@@ -216,8 +218,13 @@ public class FlightHistoryDetailsController {
         return groundStaffList;
     }
 
+    @SuppressWarnings("unused")
     @FXML
     private void initialize() {
+        // Đặt bảng co giãn theo chiều dọc
+        VBox.setVgrow(ticketTable, Priority.ALWAYS);
+        VBox.setVgrow(crewTable, Priority.ALWAYS);
+        VBox.setVgrow(groundStaffTable, Priority.ALWAYS);
         // Liên kết cột cho bảng vé
         ticketIdColumn.setCellValueFactory(cellData -> cellData.getValue().ticketIdProperty());
         seatNumberColumn.setCellValueFactory(cellData -> cellData.getValue().seatNumberProperty());
@@ -243,6 +250,41 @@ public class FlightHistoryDetailsController {
         groundStaffRoleColumn.setCellValueFactory(cellData -> cellData.getValue().roleProperty());
         groundStaffGateColumn.setCellValueFactory(cellData -> cellData.getValue().assignedGateProperty());
         groundStaffAssignmentDateColumn.setCellValueFactory(cellData -> cellData.getValue().assignmentDateProperty());
+
+        // Lắng nghe sự thay đổi kích thước bảng vé
+        ticketTable.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+            double tableWidth = newWidth.doubleValue();
+            ticketIdColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Ticket ID
+            seatNumberColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Seat Number
+            seatClassColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Seat Class
+            priceColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Price
+            passengerNameColumn.setPrefWidth(tableWidth * 0.2); // 20% cho Passenger Name
+            passengerEmailColumn.setPrefWidth(tableWidth * 0.1); // 10% cho Passenger Email
+            passengerPhoneColumn.setPrefWidth(tableWidth * 0.1); // 10% cho Passenger Phone
+        });
+
+        // Lắng nghe sự thay đổi kích thước bảng phi hành đoàn
+        crewTable.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+            double tableWidth = newWidth.doubleValue();
+            crewIdColumn.setPrefWidth(tableWidth * 0.1); // 10% cho Crew ID
+            crewNameColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Name
+            crewAddressColumn.setPrefWidth(tableWidth * 0.2); // 20% cho Address
+            crewRoleColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Role
+            crewSpecificRoleColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Crew Role
+            crewFlightNumberColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Flight Number
+            crewAssignmentDateColumn.setPrefWidth(tableWidth * 0.1); // 10% cho Assignment Date
+        });
+
+        // Lắng nghe sự thay đổi kích thước bảng nhân viên mặt đất
+        groundStaffTable.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+            double tableWidth = newWidth.doubleValue();
+            groundStaffIdColumn.setPrefWidth(tableWidth * 0.1); // 10% cho Staff ID
+            groundStaffNameColumn.setPrefWidth(tableWidth * 0.2); // 20% cho Name
+            groundStaffAddressColumn.setPrefWidth(tableWidth * 0.2); // 20% cho Address
+            groundStaffRoleColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Role
+            groundStaffGateColumn.setPrefWidth(tableWidth * 0.15); // 15% cho Assigned Gate
+            groundStaffAssignmentDateColumn.setPrefWidth(tableWidth * 0.2); // 20% cho Assignment Date
+        });
     }
 
     @FXML
