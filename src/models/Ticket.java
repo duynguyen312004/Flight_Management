@@ -9,7 +9,8 @@ public class Ticket {
     private double price;
 
     // Constructor
-    public Ticket(String ticketID, String flightNumber, String passengerID, String seatNumber, String seatClass, double price) {
+    public Ticket(String ticketID, String flightNumber, String passengerID, String seatNumber, String seatClass,
+            double price) {
         this.ticketID = ticketID;
         this.flightNumber = flightNumber;
         this.passengerID = passengerID;

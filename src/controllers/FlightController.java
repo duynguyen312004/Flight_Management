@@ -319,6 +319,33 @@ public class FlightController {
         }
     }
 
+    @FXML
+    private void handleViewHistory() {
+        try {
+            System.out.println("[DEBUG] Opening Flight History...");
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/FlightHistory.fxml"));
+            Parent root = loader.load();
+
+            // Lấy controller của màn hình lịch sử chuyến bay
+            FlightHistoryController controller = loader.getController();
+
+            // Tải dữ liệu lịch sử chuyến bay
+            controller.loadFlightHistoryData();
+
+            // Hiển thị cửa sổ mới
+            Stage stage = new Stage();
+            stage.setTitle("Flight History");
+            stage.setScene(new Scene(root));
+            stage.setMaximized(true);
+            stage.show();
+
+        } catch (IOException e) {
+            System.err.println("[ERROR] Failed to open Flight History view:");
+            e.printStackTrace();
+        }
+    }
+
     private void showAlert(String title, String content, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

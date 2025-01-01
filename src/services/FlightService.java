@@ -336,7 +336,120 @@ public class FlightService {
         return false;
     }
 
-    // 7. Ánh xạ từ ResultSet sang đối tượng Flight
+    // 7. lưu trữ dữ liệu của chuyến bay vào bảng flight_history
+    public boolean saveFlightToHistory(Flight flight, String ticketsJson, String crewJson, String groundStaffJson) {
+        String insertHistoryQuery = """
+                    INSERT INTO flight_history (flight_number, departure_location, arrival_location,
+                                                departure_time, arrival_time, status, airplane_id,
+                                                assigned_gate, tickets, crew, ground_staff)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(insertHistoryQuery)) {
+
+            statement.setString(1, flight.getFlightNumber());
+            statement.setString(2, flight.getDepartureLocation());
+            statement.setString(3, flight.getArrivalLocation());
+            statement.setTimestamp(4, Timestamp.valueOf(flight.getDepartureTime()));
+            statement.setTimestamp(5, Timestamp.valueOf(flight.getArrivalTime()));
+            statement.setString(6, flight.getStatus());
+            statement.setString(7, flight.getAirplaneId());
+            statement.setString(8, flight.getAssignedGate());
+            statement.setString(9, ticketsJson); // JSON của vé
+            statement.setString(10, crewJson); // JSON của phi hành đoàn
+            statement.setString(11, groundStaffJson); // JSON của nhân viên mặt đất
+
+            int rowsInserted = statement.executeUpdate();
+            return rowsInserted > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean archiveFlight(String flightNumber) {
+        String selectQuery = """
+                SELECT f.flight_number, f.departure_location, f.arrival_location,
+                       f.departure_time, f.arrival_time, f.status, f.assigned_gate, f.airplane_id,
+                       (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                            'ticket_id', t.ticket_id,
+                            'seat_number', t.seat_number,
+                            'seat_class', t.seat_class,
+                            'price', t.price,
+                            'passenger_id', t.passenger_id, -- Chỉ lưu passenger_id
+                            'flight_number', t.flight_number))
+                        FROM ticket t
+                        WHERE t.flight_number = f.flight_number) AS tickets_json,
+                       (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                            'id', fc.id,
+                            'name', e.name,
+                            'role', e.role,
+                            'address', e.address,
+                            'crew_role', fc.crew_role,
+                            'flight_number', fc.flight_number,
+                            'assignment_date', fc.assignment_date))
+                        FROM flight_crew fc
+                        JOIN employee e ON fc.id = e.id
+                        WHERE fc.flight_number = f.flight_number) AS crew_json,
+                       (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                            'id', gs.id,
+                            'name', e.name,
+                            'role', e.role,
+                            'address', e.address,
+                            'assigned_gate', gs.assigned_gate,
+                            'assignment_date', gs.assignment_date))
+                        FROM ground_staff gs
+                        JOIN employee e ON gs.id = e.id
+                        WHERE gs.assigned_gate = f.assigned_gate) AS ground_staff_json
+                FROM flight f
+                WHERE f.flight_number = ?
+                """;
+
+        try (Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(selectQuery)) {
+
+            statement.setString(1, flightNumber);
+            System.out.println("[DEBUG] Executing SELECT query for flight archive...");
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    // Lấy dữ liệu từ ResultSet
+                    String ticketsJson = resultSet.getString("tickets_json");
+                    String crewJson = resultSet.getString("crew_json");
+                    String groundStaffJson = resultSet.getString("ground_staff_json");
+
+                    // In dữ liệu JSON ra console để debug
+                    System.out.println("[DEBUG] Tickets JSON: " + ticketsJson);
+                    System.out.println("[DEBUG] Crew JSON: " + crewJson);
+                    System.out.println("[DEBUG] Ground Staff JSON: " + groundStaffJson);
+
+                    // Khởi tạo đối tượng Flight từ ResultSet
+                    Flight flight = new Flight(
+                            resultSet.getString("flight_number"),
+                            resultSet.getString("departure_location"),
+                            resultSet.getString("arrival_location"),
+                            resultSet.getTimestamp("departure_time").toString(),
+                            resultSet.getTimestamp("arrival_time").toString(),
+                            resultSet.getString("status"),
+                            resultSet.getString("airplane_id"),
+                            resultSet.getString("assigned_gate"));
+
+                    // Lưu chuyến bay vào lịch sử
+                    return saveFlightToHistory(flight, ticketsJson, crewJson, groundStaffJson);
+                } else {
+                    System.err.println("[ERROR] No flight data found for flight number: " + flightNumber);
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[ERROR] SQLException occurred while archiving flight:");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 8. Ánh xạ từ ResultSet sang đối tượng Flight
     private Flight mapResultSetToFlight(ResultSet resultSet) throws SQLException {
         return new Flight(
                 resultSet.getString("flight_number"),

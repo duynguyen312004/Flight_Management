@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.FlightHistoryController" spacing="10" alignment="CENTER" prefHeight="600" prefWidth="1000">
+    <!-- Tiêu đề -->
+    <Label text="Flight History" style="-fx-font-size: 18; -fx-font-weight: bold;" />
+
+    <!-- Bảng dữ liệu -->
+    <TableView fx:id="flightHistoryTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="Flight Number" fx:id="flightNumberColumn" />
+            <TableColumn text="Departure" fx:id="departureColumn" />
+            <TableColumn text="Arrival" fx:id="arrivalColumn" />
+            <TableColumn text="Departure Time" fx:id="departureTimeColumn" />
+            <TableColumn text="Arrival Time" fx:id="arrivalTimeColumn" />
+            <TableColumn text="Status" fx:id="statusColumn" />
+            <TableColumn text="Gate" fx:id="gateColumn" />
+            <TableColumn text="Airplane" fx:id="airplaneColumn" />
+            <TableColumn text="Actions" fx:id="actionColumn" />
+        </columns>
+    </TableView>
+
+</VBox>

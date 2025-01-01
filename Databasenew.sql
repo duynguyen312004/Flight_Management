@@ -41,6 +41,21 @@ CREATE TABLE flight (
     FOREIGN KEY (airplane_id) REFERENCES airplane(airplane_id),
     FOREIGN KEY (assigned_gate) REFERENCES gate(gate_number)
 );
+CREATE TABLE flight_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    flight_number VARCHAR(50) NOT NULL,
+    departure_location VARCHAR(100),
+    arrival_location VARCHAR(100),
+    departure_time DATETIME,
+    arrival_time DATETIME,
+    status ENUM('Cancelled', 'Landed') NOT NULL,
+    airplane_id VARCHAR(50),
+    assigned_gate VARCHAR(50),
+    tickets JSON, -- Danh sách vé dưới dạng JSON
+    crew JSON, -- Danh sách phi hành đoàn dưới dạng JSON
+    ground_staff JSON -- Danh sách nhân viên mặt đất dưới dạng JSON
+);
+
 
 -- Bảng ground_staff
 CREATE TABLE ground_staff (
