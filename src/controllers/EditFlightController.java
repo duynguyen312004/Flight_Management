@@ -141,6 +141,8 @@ public class EditFlightController {
     @FXML
     private void handleSave() {
         try {
+            System.out.println("[DEBUG] Starting handleSave process...");
+
             String departureLocation = departureField.getText().trim();
             String arrivalLocation = arrivalField.getText().trim();
             LocalDate departureDate = departureDatePicker.getValue();
@@ -150,6 +152,14 @@ public class EditFlightController {
             int arrivalHour = arrivalHourSpinner.getValue();
             int arrivalMinute = arrivalMinuteSpinner.getValue();
             String status = statusComboBox.getValue();
+
+            // Log thông tin đầu vào
+            System.out.println("[DEBUG] Input Details:");
+            System.out.println("- Departure Location: " + departureLocation);
+            System.out.println("- Arrival Location: " + arrivalLocation);
+            System.out.println("- Departure Time: " + departureDate + " " + departureHour + ":" + departureMinute);
+            System.out.println("- Arrival Time: " + arrivalDate + " " + arrivalHour + ":" + arrivalMinute);
+            System.out.println("- Status: " + status);
 
             // Validate thông tin
             if (departureLocation.isEmpty() || arrivalLocation.isEmpty() || departureDate == null
@@ -173,64 +183,93 @@ public class EditFlightController {
             flight.setArrivalTime(arrivalTime.format(TIMESTAMP_FORMATTER));
             flight.setStatus(status);
 
-            // **Logic giải phóng và cập nhật tài nguyên**
-
-            // 1. Kiểm tra cổng có thay đổi không
-            Gate selectedGate = gateComboBox.getValue();
-            if (selectedGate != null && !selectedGate.getGateNumber().equals(flight.getAssignedGate())) {
-                // Giải phóng cổng cũ
-                if (flight.getAssignedGate() != null) {
-                    gateService.releaseGate(flight.getAssignedGate());
-                    gateService.releaseStaffAssignedToGate(flight.getAssignedGate()); // Giải phóng nhân viên liên quan
-                }
-                // Gán cổng mới
-                gateService.assignGate(selectedGate.getGateNumber());
-                flight.setAssignedGate(selectedGate.getGateNumber());
-            }
-
-            // 2. Kiểm tra máy bay có thay đổi không
-            Airplane selectedAirplane = airplaneComboBox.getValue();
-            if (selectedAirplane != null && !selectedAirplane.getAirplaneId().equals(flight.getAirplaneId())) {
-                // Giải phóng máy bay cũ
-                if (flight.getAirplaneId() != null) {
-                    airplaneService.releaseAirplane(flight.getAirplaneId());
-                }
-                // Gán máy bay mới
-                airplaneService.assignAirplane(selectedAirplane.getAirplaneId());
-                flight.setAirplaneId(selectedAirplane.getAirplaneId());
-            }
-
-            // 3. Logic trạng thái đặc biệt (Landed, Cancelled)
-            if (status.equals("Landed") || status.equals("Cancelled")) {
-                // Giải phóng cổng và nhân viên liên quan
-                if (flight.getAssignedGate() != null) {
-                    gateService.releaseGate(flight.getAssignedGate());
-                    gateService.releaseStaffAssignedToGate(flight.getAssignedGate());
-                    flight.setAssignedGate(null); // Xóa cổng khỏi chuyến bay
-                }
-
-                // Giải phóng máy bay
-                if (flight.getAirplaneId() != null) {
-                    airplaneService.releaseAirplane(flight.getAirplaneId());
-                    flight.setAirplaneId(null); // Xóa máy bay khỏi chuyến bay
-                }
-
-                // Giải phóng phi hành đoàn
-                flightService.releaseFlightCrew(flight.getFlightNumber());
-            }
-
-            // Lưu chuyến bay đã chỉnh sửa
-            boolean success = flightService.updateFlight(flight);
-
-            if (success) {
-                showAlert("Success", "Flight updated successfully.", Alert.AlertType.INFORMATION);
-                closeWindow();
-            } else {
+            System.out.println("[DEBUG] Updating flight in database...");
+            boolean updateSuccess = flightService.updateFlight(flight);
+            if (!updateSuccess) {
+                System.err.println("[ERROR] Failed to update flight in database.");
                 showAlert("Error", "Failed to update flight.", Alert.AlertType.ERROR);
+                return;
             }
+            System.out.println("[DEBUG] Flight updated successfully!");
+
+            // Xử lý trạng thái đặc biệt
+            if (status.equals("Landed") || status.equals("Cancelled")) {
+                handleSpecialStatus();
+            } else {
+                handleGateAndAirplaneUpdates();
+            }
+
+            showAlert("Success", "Flight updated successfully.", Alert.AlertType.INFORMATION);
+            closeWindow();
         } catch (Exception e) {
+            System.err.println("[ERROR] Exception occurred during handleSave:");
             e.printStackTrace();
             showAlert("Error", "An error occurred while saving the flight.", Alert.AlertType.ERROR);
+        }
+    }
+
+    private void handleSpecialStatus() throws Exception {
+        System.out.println("[DEBUG] Handling special status: " + flight.getStatus());
+
+        // Lưu vào lịch sử
+        System.out.println("[DEBUG] Archiving flight...");
+        boolean archived = flightService.archiveFlight(flight.getFlightNumber());
+        if (!archived) {
+            System.err.println("[ERROR] Failed to archive flight.");
+            showAlert("Error", "Failed to archive flight history.", Alert.AlertType.ERROR);
+            return;
+        }
+        System.out.println("[DEBUG] Flight archived successfully!");
+
+        // Giải phóng tài nguyên
+        if (flight.getAssignedGate() != null) {
+            System.out.println("[DEBUG] Releasing gate: " + flight.getAssignedGate());
+            gateService.releaseGate(flight.getAssignedGate());
+            gateService.releaseStaffAssignedToGate(flight.getAssignedGate());
+            flight.setAssignedGate(null);
+        }
+
+        if (flight.getAirplaneId() != null) {
+            System.out.println("[DEBUG] Releasing airplane: " + flight.getAirplaneId());
+            airplaneService.releaseAirplane(flight.getAirplaneId());
+            flight.setAirplaneId(null);
+        }
+
+        System.out.println("[DEBUG] Releasing flight crew...");
+        flightService.releaseFlightCrew(flight.getFlightNumber());
+
+        // Xóa chuyến bay khỏi bảng flight
+        System.out.println("[DEBUG] Deleting flight from active flights...");
+        boolean deleteSuccess = flightService.deleteFlight(flight.getFlightNumber());
+        if (!deleteSuccess) {
+            System.err.println("[ERROR] Failed to delete flight after archiving.");
+            showAlert("Error", "Failed to delete flight after archiving.", Alert.AlertType.ERROR);
+        } else {
+            System.out.println("[DEBUG] Flight deleted successfully!");
+        }
+    }
+
+    private void handleGateAndAirplaneUpdates() throws Exception {
+        // Xử lý cổng
+        Gate selectedGate = gateComboBox.getValue();
+        if (selectedGate != null && !selectedGate.getGateNumber().equals(flight.getAssignedGate())) {
+            System.out.println("[DEBUG] Changing assigned gate...");
+            if (flight.getAssignedGate() != null) {
+                gateService.releaseGate(flight.getAssignedGate());
+            }
+            gateService.assignGate(selectedGate.getGateNumber());
+            flight.setAssignedGate(selectedGate.getGateNumber());
+        }
+
+        // Xử lý máy bay
+        Airplane selectedAirplane = airplaneComboBox.getValue();
+        if (selectedAirplane != null && !selectedAirplane.getAirplaneId().equals(flight.getAirplaneId())) {
+            System.out.println("[DEBUG] Changing assigned airplane...");
+            if (flight.getAirplaneId() != null) {
+                airplaneService.releaseAirplane(flight.getAirplaneId());
+            }
+            airplaneService.assignAirplane(selectedAirplane.getAirplaneId());
+            flight.setAirplaneId(selectedAirplane.getAirplaneId());
         }
     }
 

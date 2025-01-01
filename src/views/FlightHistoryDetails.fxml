@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+
+<GridPane xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.FlightHistoryDetailsController"
+          alignment="TOP_CENTER" hgap="10" vgap="10" style="-fx-padding: 20;">
+    
+    <!-- Tiêu đề -->
+    <Label text="Flight History Details" style="-fx-font-size: 18; -fx-font-weight: bold;" GridPane.columnSpan="3" GridPane.halignment="CENTER"/>
+
+    <!-- Bảng Tickets -->
+    <VBox spacing="10" GridPane.rowIndex="1" GridPane.columnIndex="0">
+        <Label text="Tickets" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+        <TableView fx:id="ticketTable" prefWidth="600" prefHeight="200">
+            <columns>
+                <TableColumn text="Ticket ID" fx:id="ticketIdColumn" prefWidth="100"/>
+                <TableColumn text="Seat Number" fx:id="seatNumberColumn" prefWidth="100"/>
+                <TableColumn text="Seat Class" fx:id="seatClassColumn" prefWidth="100"/>
+                <TableColumn text="Price" fx:id="priceColumn" prefWidth="100"/>
+                <TableColumn text="Passenger Name" fx:id="passengerNameColumn" prefWidth="150"/>
+                <TableColumn text="Passenger Email" fx:id="passengerEmailColumn" prefWidth="200"/>
+                <TableColumn text="Passenger Phone" fx:id="passengerPhoneColumn" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- Bảng Flight Crew -->
+    <VBox spacing="10" GridPane.rowIndex="1" GridPane.columnIndex="1">
+        <Label text="Flight Crew" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+        <TableView fx:id="crewTable" prefWidth="600" prefHeight="200">
+            <columns>
+                <TableColumn text="Crew ID" fx:id="crewIdColumn" prefWidth="100"/>
+                <TableColumn text="Name" fx:id="crewNameColumn" prefWidth="150"/>
+                <TableColumn text="Address" fx:id="crewAddressColumn" prefWidth="200"/>
+                <TableColumn text="Role" fx:id="crewRoleColumn" prefWidth="100"/>
+                <TableColumn text="Crew Role" fx:id="crewSpecificRoleColumn" prefWidth="100"/>
+                <TableColumn text="Flight Number" fx:id="crewFlightNumberColumn" prefWidth="100"/>
+                <TableColumn text="Assignment Date" fx:id="crewAssignmentDateColumn" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- Bảng Ground Staff -->
+    <VBox spacing="10" GridPane.rowIndex="1" GridPane.columnIndex="2">
+        <Label text="Ground Staff" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+        <TableView fx:id="groundStaffTable" prefWidth="600" prefHeight="200">
+            <columns>
+                <TableColumn text="Staff ID" fx:id="groundStaffIdColumn" prefWidth="100"/>
+                <TableColumn text="Name" fx:id="groundStaffNameColumn" prefWidth="150"/>
+                <TableColumn text="Address" fx:id="groundStaffAddressColumn" prefWidth="200"/>
+                <TableColumn text="Role" fx:id="groundStaffRoleColumn" prefWidth="100"/>
+                <TableColumn text="Assigned Gate" fx:id="groundStaffGateColumn" prefWidth="100"/>
+                <TableColumn text="Assignment Date" fx:id="groundStaffAssignmentDateColumn" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+</GridPane>

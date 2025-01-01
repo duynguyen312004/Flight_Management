@@ -23,6 +23,8 @@
             <Button text="Employees" styleClass="sidebar-button" onAction="#handleManageEmployee" />
             <Button text="Airplanes" styleClass="sidebar-button" onAction="#handleManageAirplane" />
             <Button text="Gates" styleClass="sidebar-button" onAction="#handleManageGate" />
+            <Button text="History" styleClass="sidebar-button" onAction="#handleViewHistory" />
+
         </VBox>
 
         <!-- Main Panel -->
