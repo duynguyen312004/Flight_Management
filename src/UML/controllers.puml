@@ -1,0 +1,376 @@
+@startuml
+
+' Package for controllers
+package "controllers" {
+
+    class AddEmployeeController {
+        - ComboBox<String> employeeTypeComboBox
+        - TextField idField
+        - TextField nameField
+        - TextField addressField
+        - TextField roleField
+        - Label crewRoleLabel
+        - ComboBox<String> crewRoleComboBox
+        - Button addButton
+        + void initialize()
+        + void handleAddEmployee()
+    }
+
+    class AddFlightController {
+        - TextField flightNumberField
+        - TextField departureField
+        - TextField arrivalField
+        - DatePicker departureDatePicker
+        - DatePicker arrivalDatePicker
+        - Spinner<Integer> departureHourSpinner
+        - Spinner<Integer> departureMinuteSpinner
+        - Spinner<Integer> departureSecondSpinner
+        - Spinner<Integer> arrivalHourSpinner
+        - Spinner<Integer> arrivalMinuteSpinner
+        - Spinner<Integer> arrivalSecondSpinner
+        - ComboBox<Airplane> airplaneComboBox
+        - ComboBox<Gate> gateComboBox
+        - ComboBox<String> statusComboBox
+        + void initialize()
+        + void handleSave()
+    }
+
+    class AssignEmployeeController {
+        - TextField flightNumberField
+        - TextField gateField
+        - TableView<FlightCrew> crewTable
+        - TableColumn<FlightCrew, String> crewIdColumn
+        - TableColumn<FlightCrew, String> crewNameColumn
+        - TableColumn<FlightCrew, String> crewRoleColumn
+        - ComboBox<String> crewRoleComboBox
+        - TableView<GroundStaff> staffTable
+        + void setFlight(Flight flight)
+        + boolean isAssignmentComplete()
+        + void handleAssignCrew()
+        + void handleAssignStaff()
+    }
+
+    class EditEmployeeController {
+        - TextField idField
+        - TextField nameField
+        - TextField addressField
+        - TextField roleField
+        - Label crewRoleLabel
+        - ComboBox<String> crewRoleComboBox
+        - Employee currentEmployee
+        + void setEmployee(Employee employee)
+        + void handleSave()
+    }
+
+    class EditFlightController {
+        - TextField flightNumberField
+        - TextField departureField
+        - TextField arrivalField
+        - DatePicker departureDatePicker
+        - DatePicker arrivalDatePicker
+        - Spinner<Integer> departureHourSpinner
+        - Spinner<Integer> departureMinuteSpinner
+        - Spinner<Integer> arrivalHourSpinner
+        - Spinner<Integer> arrivalMinuteSpinner
+        - ComboBox<Airplane> airplaneComboBox
+        - ComboBox<Gate> gateComboBox
+        - ComboBox<String> statusComboBox
+        + void setFlight(Flight flight)
+        + void handleSave()
+    }
+
+    class EmployeeController {
+        - ComboBox<String> employeeTypeComboBox
+        - TableView<Employee> employeeTable
+        - TableColumn<Employee, String> idColumn
+        - TableColumn<Employee, String> nameColumn
+        - TableColumn<Employee, String> roleColumn
+        - TableColumn<Employee, String> additionalInfoColumn
+        + void initialize()
+        + void handleAddEmployee()
+        + void handleEditEmployee()
+        + void handleDeleteEmployee()
+    }
+
+    class FlightController {
+        - TableView<Flight> flightTable
+        - TableColumn<Flight, String> flightNumberColumn
+        - TableColumn<Flight, String> departureColumn
+        - TableColumn<Flight, String> arrivalColumn
+        - TableColumn<Flight, String> departureTimeColumn
+        - TableColumn<Flight, String> arrivalTimeColumn
+        - TableColumn<Flight, String> statusColumn
+        - TableColumn<Flight, String> gateColumn
+        - TableColumn<Flight, String> airplaneColumn
+        + void initialize()
+        + void handleAddFlight()
+        + void handleEditFlight(Flight flight)
+        + void handleDeleteFlight(Flight flight)
+    }
+
+    class FlightDetailsController {
+        - Label flightInfoLabel
+        - Label gateInfoLabel
+        - Label ticketCountLabel
+        - Label passengerCountLabel
+        - TableView<FlightCrew> flightCrewTable
+        + void loadFlightDetails(Flight flight)
+        + void handleViewTicketDetails()
+    }
+
+    class FlightHistoryController {
+        - TableView<FlightHistory> flightHistoryTable
+        - TableColumn<FlightHistory, String> flightNumberColumn
+        - TableColumn<FlightHistory, String> departureColumn
+        - TableColumn<FlightHistory, String> arrivalColumn
+        + void initialize()
+        + void loadFlightHistoryData()
+    }
+
+    class FlightHistoryDetailsController {
+        - TableView<TicketAdapter> ticketTable
+        - TableView<FlightCrew> crewTable
+        - TableView<GroundStaff> groundStaffTable
+        + void setFlightHistory(FlightHistory flightHistory)
+    }
+
+    class ManageAirplaneController {
+        - TableView<Airplane> airplaneTable
+        - TableColumn<Airplane, String> airplaneIdColumn
+        - TableColumn<Airplane, String> seatCapacityColumn
+        - TableColumn<Airplane, String> statusColumn
+        + void initialize()
+        + void handleAddAirplane()
+        + void handleDeleteAirplane()
+    }
+
+    class ManageGateController {
+        - TableView<Gate> gateTable
+        - TableColumn<Gate, String> gateNumberColumn
+        - TableColumn<Gate, String> statusColumn
+        - TableColumn<Gate, String> flightUsingColumn
+        + void initialize()
+        + void handleAddGate()
+        + void handleDeleteGate()
+    }
+
+}
+
+' Package for models
+package "models" {
+
+    class Airplane {
+        - String airplaneId
+        - int seatCapacity
+        - String status
+        + String getAirplaneId()
+        + int getSeatCapacity()
+        + String getStatus()
+    }
+
+    class Employee {
+        - String id
+        - String name
+        - String address
+        - String role
+        + String getId()
+        + String getName()
+        + String getAddress()
+        + String getRole()
+    }
+
+    class Flight {
+        - String flightNumber
+        - String departureLocation
+        - String arrivalLocation
+        - String departureTime
+        - String arrivalTime
+        - String status
+        - String assignedGate
+        - String airplaneId
+        + String getFlightNumber()
+        + String getDepartureLocation()
+        + String getArrivalLocation()
+        + String getDepartureTime()
+        + String getArrivalTime()
+        + String getStatus()
+    }
+
+    class FlightCrew {
+        - String crewRole
+        - String flightNumber
+        - String assignmentDate
+        + String getCrewRole()
+        + String getFlightNumber()
+        + String getAssignmentDate()
+    }
+
+    class FlightHistory {
+        - String flightNumber
+        - String departureLocation
+        - String arrivalLocation
+        - String departureTime
+        - String arrivalTime
+        - String status
+        - String airplaneId
+        - String assignedGate
+        - String tickets
+        - String crew
+        - String groundStaff
+        + String getFlightNumber()
+        + String getDepartureLocation()
+        + String getArrivalLocation()
+    }
+
+    class Gate {
+        - String gateNumber
+        - boolean isAvailable
+        + String getGateNumber()
+        + boolean isAvailable()
+    }
+
+    class GroundStaff {
+        - String assignedGate
+        - String assignmentDate
+        + String getAssignedGate()
+        + String getAssignmentDate()
+    }
+
+    class Passenger {
+        - String id
+        - String name
+        - String email
+        - String phone
+        + String getId()
+        + String getName()
+        + String getEmail()
+        + String getPhone()
+    }
+
+    class Ticket {
+        - String ticketID
+        - String flightNumber
+        - String passengerID
+        - String seatNumber
+        - String seatClass
+        - double price
+        + String getTicketID()
+        + String getFlightNumber()
+        + String getPassengerID()
+    }
+
+    class TicketAdapter {
+        - String ticketId
+        - String flightNumber
+        - String seatNumber
+        - String seatClass
+        - double price
+        - String passengerName
+        - String passengerEmail
+        - String passengerPhone
+        + String getTicketID()
+        + String getPassengerName()
+    }
+
+}
+
+' Package for services
+package "services" {
+
+    class AirplaneService {
+        + Airplane getAirplaneById(String airplaneId)
+        + List<Airplane> getAllAirplanes()
+        + boolean addAirplane(Airplane airplane)
+        + boolean updateAirplane(Airplane airplane)
+        + boolean deleteAirplane(String airplaneId)
+    }
+
+    class FlightCrewService {
+        + List<FlightCrew> getAllFlightCrews()
+        + boolean addFlightCrew(FlightCrew crew)
+        + boolean updateFlightCrew(FlightCrew crew)
+        + boolean deleteFlightCrew(String flightCrewId)
+        + FlightCrew getFlightCrewById(String id)
+    }
+
+    class FlightService {
+        + List<Flight> getAllFlights()
+        + List<Flight> getFlightsByStatus(String status)
+        + Flight getFlightByNumber(String flightNumber)
+        + boolean addFlight(Flight flight)
+        + boolean updateFlight(Flight flight)
+        + boolean deleteFlight(String flightNumber)
+    }
+
+    class GateService {
+        + List<Gate> getAllGates()
+        + Gate getGateByFlight(String flightNumber)
+        + boolean assignGate(String gateNumber)
+        + boolean releaseGate(String gateNumber)
+    }
+
+    class GroundStaffService {
+        + List<GroundStaff> getAllGroundStaff()
+        + boolean addGroundStaff(GroundStaff groundStaff)
+        + boolean updateGroundStaff(GroundStaff groundStaff)
+        + boolean deleteGroundStaff(String groundStaffId)
+        + GroundStaff getGroundStaffById(String id)
+    }
+
+    class PassengerService {
+        + List<Passenger> getAllPassengers()
+        + int getPassengerCountByFlight(String flightNumber)
+        + boolean addPassenger(Passenger passenger)
+        + boolean updatePassenger(Passenger passenger)
+        + boolean deletePassenger(String passengerId)
+    }
+
+    class TicketService {
+        + List<Ticket> getAllTickets()
+        + int getTicketCountByFlight(String flightNumber)
+        + boolean addTicket(Ticket ticket)
+        + boolean updateTicket(Ticket ticket)
+        + boolean deleteTicket(String ticketID)
+    }
+
+    class FlightHistoryService {
+        + List<FlightHistory> getAllFlightHistories()
+    }
+}
+
+
+' Relationships
+AddEmployeeController --> FlightCrewService
+AddEmployeeController --> GroundStaffService
+AddFlightController --> FlightService
+AddFlightController --> AirplaneService
+AddFlightController --> GateService
+AssignEmployeeController --> FlightCrewService
+AssignEmployeeController --> GroundStaffService
+EditEmployeeController --> FlightCrewService
+EditEmployeeController --> GroundStaffService
+EditFlightController --> FlightService
+EditFlightController --> AirplaneService
+EditFlightController --> GateService
+EmployeeController --> FlightCrewService
+EmployeeController --> GroundStaffService
+FlightController --> FlightService
+FlightDetailsController --> GateService
+FlightDetailsController --> TicketService
+FlightDetailsController --> PassengerService
+FlightDetailsController --> FlightCrewService
+FlightDetailsController --> AirplaneService
+FlightHistoryController --> FlightHistoryService
+FlightHistoryDetailsController --> PassengerService
+ManageAirplaneController --> AirplaneService
+ManageGateController --> GateService
+Flight --> Airplane
+Flight --> Gate
+Flight --> Ticket
+Flight --> Passenger
+TicketAdapter --> Ticket
+FlightCrew --> Employee
+GroundStaff --> Employee
+FlightHistory --> Flight
+
+@enduml
