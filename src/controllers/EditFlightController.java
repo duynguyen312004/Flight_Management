@@ -182,6 +182,7 @@ public class EditFlightController {
             flight.setDepartureTime(departureTime.format(TIMESTAMP_FORMATTER));
             flight.setArrivalTime(arrivalTime.format(TIMESTAMP_FORMATTER));
             flight.setStatus(status);
+            handleGateAndAirplaneUpdates();
 
             System.out.println("[DEBUG] Updating flight in database...");
             boolean updateSuccess = flightService.updateFlight(flight);
@@ -254,11 +255,16 @@ public class EditFlightController {
         Gate selectedGate = gateComboBox.getValue();
         if (selectedGate != null && !selectedGate.getGateNumber().equals(flight.getAssignedGate())) {
             System.out.println("[DEBUG] Changing assigned gate...");
-            if (flight.getAssignedGate() != null) {
-                gateService.releaseGate(flight.getAssignedGate());
+            // Gọi GateService để xử lý chuyển đổi nhân viên và cập nhật Gate
+            boolean gateUpdateSuccess = gateService.updateStaffAssignmentFromOldGate(flight.getAssignedGate(),
+                    selectedGate.getGateNumber());
+
+            if (gateUpdateSuccess) {
+                System.out.println("[DEBUG] Gate updated successfully.");
+                flight.setAssignedGate(selectedGate.getGateNumber());
+            } else {
+                throw new Exception("Failed to update staff assignment and gate.");
             }
-            gateService.assignGate(selectedGate.getGateNumber());
-            flight.setAssignedGate(selectedGate.getGateNumber());
         }
 
         // Xử lý máy bay
@@ -271,6 +277,9 @@ public class EditFlightController {
             airplaneService.assignAirplane(selectedAirplane.getAirplaneId());
             flight.setAirplaneId(selectedAirplane.getAirplaneId());
         }
+        // Làm mới dữ liệu trên giao diện
+        loadAvailableGates();
+        loadAvailableAirplanes();
     }
 
     @FXML

@@ -228,4 +228,62 @@ public class GateService {
         return false;
     }
 
+    public boolean updateStaffAssignmentFromOldGate(String oldGate, String newGate) {
+        Connection connection = null;
+
+        try {
+            connection = DatabaseConnection.getConnection();
+            connection.setAutoCommit(false); // Bắt đầu transaction
+
+            // 1. Gán Ground Staff từ Gate cũ sang Gate mới
+            String transferStaffQuery = "UPDATE ground_staff SET assigned_gate = ?, assignment_date = NOW() WHERE assigned_gate = ?";
+            try (PreparedStatement transferStatement = connection.prepareStatement(transferStaffQuery)) {
+                transferStatement.setString(1, newGate);
+                transferStatement.setString(2, oldGate);
+                int rowsTransferred = transferStatement.executeUpdate();
+                System.out.println("[DEBUG] " + rowsTransferred + " ground staff transferred from gate " + oldGate
+                        + " to gate " + newGate);
+            }
+
+            // 2. Giải phóng Gate cũ
+            String releaseOldGateQuery = "UPDATE gate SET is_available = 1 WHERE gate_number = ?";
+            try (PreparedStatement releaseGateStatement = connection.prepareStatement(releaseOldGateQuery)) {
+                releaseGateStatement.setString(1, oldGate);
+                releaseGateStatement.executeUpdate();
+                System.out.println("[DEBUG] Released old gate: " + oldGate);
+            }
+
+            // 3. Đánh dấu Gate mới là không khả dụng
+            String assignNewGateQuery = "UPDATE gate SET is_available = 0 WHERE gate_number = ?";
+            try (PreparedStatement assignGateStatement = connection.prepareStatement(assignNewGateQuery)) {
+                assignGateStatement.setString(1, newGate);
+                assignGateStatement.executeUpdate();
+                System.out.println("[DEBUG] Assigned new gate: " + newGate);
+            }
+
+            connection.commit(); // Commit transaction nếu mọi việc thành công
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            if (connection != null) {
+                try {
+                    System.out.println("[DEBUG] Rolling back transaction due to error...");
+                    connection.rollback(); // Rollback nếu có lỗi
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
+            return false;
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close(); // Đóng kết nối
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
+                }
+            }
+        }
+    }
+
 }
