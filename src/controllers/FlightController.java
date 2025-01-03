@@ -67,15 +67,15 @@ public class FlightController {
         // Đặt kích thước cột theo tỷ lệ
         flightTable.widthProperty().addListener((observable, oldValue, newValue) -> {
             double tableWidth = newValue.doubleValue();
-            flightNumberColumn.setPrefWidth(tableWidth * 0.1);
+            flightNumberColumn.setPrefWidth(tableWidth * 0.05);
             departureColumn.setPrefWidth(tableWidth * 0.1);
             arrivalColumn.setPrefWidth(tableWidth * 0.1);
-            departureTimeColumn.setPrefWidth(tableWidth * 0.15);
-            arrivalTimeColumn.setPrefWidth(tableWidth * 0.15);
-            statusColumn.setPrefWidth(tableWidth * 0.1);
-            gateColumn.setPrefWidth(tableWidth * 0.08);
-            airplaneColumn.setPrefWidth(tableWidth * 0.1);
-            actionColumn.setPrefWidth(tableWidth * 0.12); // 10%
+            departureTimeColumn.setPrefWidth(tableWidth * 0.175);
+            arrivalTimeColumn.setPrefWidth(tableWidth * 0.175);
+            statusColumn.setPrefWidth(tableWidth * 0.05);
+            gateColumn.setPrefWidth(tableWidth * 0.05);
+            airplaneColumn.setPrefWidth(tableWidth * 0.05);
+            actionColumn.setPrefWidth(tableWidth * 0.25); // 10%
 
         });
 

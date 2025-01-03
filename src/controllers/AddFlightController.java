@@ -226,6 +226,7 @@ public class AddFlightController {
             Stage stage = new Stage();
             stage.setTitle("Assign Employees");
             stage.setScene(new Scene(root));
+            stage.setMaximized(true);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
 

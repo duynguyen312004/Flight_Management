@@ -128,6 +128,7 @@ public class FlightHistoryController {
             Stage stage = new Stage();
             stage.setTitle("Flight Details - " + flightHistory.getFlightNumber());
             stage.setScene(new Scene(root));
+            stage.setMaximized(true);
             stage.show();
 
         } catch (IOException e) {
